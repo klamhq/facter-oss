@@ -1,0 +1,20 @@
+site_name: Facter-OSS
+site_url: https://klamhq.github.io/facter-oss/
+site_dir: public
+repo_name: klamhq/facter-oss
+repo_url: https://github.com/klamhq/facter-oss
+nav:
+  - Home: home/index.md
+  - Concepts: concepts/index.md
+  - Deployments: deployments/index.md
+  - Settings: settings/index.md
+  - Guides: guides/index.md
+theme:
+  name: material
+  logo: assets/logo/facter.png
+  features:
+      - navigation.tabs
+      - toc.follow
+extra:
+  version:
+    provider: mike

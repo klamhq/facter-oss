@@ -1,0 +1,15 @@
+.idea
+cover*
+./tests/cover*
+main
+data
+*.buf
+bin
+*.vagrant
+*.retry
+tests/puppet/results
+node_modules
+*-perf
+# debug file
+__debug*
+public

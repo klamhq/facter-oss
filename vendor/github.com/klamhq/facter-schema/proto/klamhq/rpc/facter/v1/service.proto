@@ -1,0 +1,454 @@
+syntax = 'proto3';
+
+package klamhq.rpc.facter.v1;
+
+option go_package = "github.com/klamhq/facter-schema/proto/rpc/facter/v1;facterv1";
+
+/**
+ * Represents the inventory of a host.
+ */
+message HostInventory {
+  string hostname = 1; /** Hostname of the host. */
+  repeated Package packages = 2; /** List of installed packages. */
+  Network network = 3; /** Network information. */
+  Platform platform = 4; /** Platform details. */
+  repeated User users = 5; /** List of users. */
+  Metadata metadata = 6; /** Additional metadata. */
+  Identifier identifier = 7; /** Unique identifier of the host. */
+  repeated SshKeyInfo ssh_key_info = 8; /** SSH key information. */
+  repeated Application application = 9; /** Application information. */
+  repeated SshKeyAccess ssh_key_access = 10; /** SSH key access details. */
+  repeated SystemdService systemd_service = 11; /** Systemd service information. */
+  repeated KnownHost known_host = 12; /** Known hosts information. */
+  repeated Process processes = 13; /** List of processes running on the host. */
+  string created_at = 14; /** Creation date of the inventory. */
+}
+
+message HostDeltaInventory {
+  string hostname = 1;
+  repeated Package packages_added = 2; /** Packages added. */
+  repeated Package packages_removed = 3; /** Packages removed. */
+  repeated User users_added = 4; /** Users added. */
+  repeated User users_removed = 5; /** Users removed. */
+  repeated Application applications_added = 6; /** Applications added. */
+  repeated Application applications_removed = 7; /** Applications removed. */
+  repeated SystemdService systemdservices_added = 8; /** Systemd services added. */
+  repeated SystemdService systemdservices_removed = 9; /** Systemd services removed. */
+  repeated KnownHost knownhosts_added = 10; /** Known hosts added. */
+  repeated KnownHost knownhosts_removed = 11; /** Known hosts removed. */
+  repeated SshKeyAccess sshkeyaccess_added = 12; /** SSH key access added. */
+  repeated SshKeyAccess sshkeyaccess_removed = 13; /** SSH key access removed. */
+  string updated_at = 14; /** Last update date of the delta inventory. */
+  repeated SshKeyInfo sshkeyinfo_added = 15; /** SSH key info added. */
+  repeated SshKeyInfo sshkeyinfo_removed = 16; /** SSH key info removed. */
+  Platform platform = 17; /** Platform details. */
+  Network network = 18; /** Network information. */
+  repeated Process processes_added = 19; /** List of processes running on the host. */
+  repeated Process processes_removed = 20; /** List of processes removed from the host. */
+}
+
+/**
+ * Represents the inventory of a host, which can be either full or delta.
+ */
+message InventoryRequest {
+  oneof content {
+    HostInventory full = 1; /** Full inventory of the host. */
+    HostDeltaInventory delta = 2; /** Delta inventory of the host. */
+  }
+}
+
+/** Identifier for a machine. */
+message Identifier {
+  string machine_id = 1; /** Unique machine identifier. */
+  string uuid = 2; /** Universally unique identifier (UUID). */
+}
+
+/** Additional metadata information. */
+message Metadata {
+  string running_user = 1; /** User who ran the process. */
+  string running_date = 2; /** Date of execution. */
+  string facter_version = 3; /** Facter version used. */
+}
+
+/** Systemd service information. */
+message SystemdService {
+  string name = 1; /** Service name. */
+  string description = 2; /** Service description. */
+  string loaded = 3; /** Loaded state. */
+  string active = 4; /** Active state. */
+  string sub_state = 5; /** Sub-state. */
+  bool enabled = 6; /** Whether the service is enabled. */
+  int64 pid = 7; /** Process ID. */
+  int64 tasks = 8; /** Number of tasks. */
+  int64 memory_bytes = 9; /** Memory usage in bytes. */
+  int64 cpu_usage_nsec = 10; /** CPU usage in nanoseconds. */
+  string cgroup = 11; /** Control group. */
+  repeated string requires = 12; /** Required services. */
+  repeated string wants = 13; /** Wanted services. */
+  repeated string after = 14; /** Services started after this one. */
+  repeated string before = 15; /** Services started before this one. */
+  string updated_at = 16; /** Last update date of the service information. */
+}
+
+/** Platform information. */
+message Platform {
+  string init_system = 1; /** Init system used. */
+  Kernel kernel = 2; /** Kernel information. */
+  Os os = 3; /** Operating system details. */
+  Virtualization virtualization = 4; /** Virtualization details. */
+  Hardware hardware = 5; /** Hardware information. */
+  Identifier identifier = 6; /** Host identifier. */
+  uint64 uptime = 7; /** Uptime of the host in seconds. */
+}
+
+message Kernel {
+  string kernel = 1; /** Kernel name/version. */
+}
+
+message Os {
+  string name = 1; /** OS name. */
+  string version = 2; /** OS version. */
+  string family = 3; /** OS family. */
+}
+
+/** Virtualization details. */
+message Virtualization {
+  string system = 1; /** Virtualization system. */
+  string role = 2; /** Virtualization role (host/guest). */
+}
+
+/** User information. */
+message User {
+  string username = 1; /** Username. */
+  string uid = 2; /** User ID. */
+  string gid = 3; /** Group ID. */
+  string home = 4; /** Home directory. */
+  repeated Session sessions = 5; /** List of sessions. */
+  string shell = 6; /** User shell. */
+  bool can_become_root = 7; /** Whether the user can become root. */
+  string updated_at = 8; /** Last update date of the user information. */
+}
+
+message Session {
+  bool connected = 1; /** Whether the session is active. */
+  string terminal = 2; /** Terminal name. */
+  int64 started = 3; /** Start time of the session. */
+  string host = 4; /** Remote host name. */
+}
+
+/**
+ * Network information.
+ */
+message Network {
+  repeated Interface interfaces = 1; /** Network interfaces. */
+  Ip ip = 2; /** Local IP address. */
+  ExternalIp external_ip = 3; /** External IP information. */
+  repeated ConnectionState connections = 4; /** Network connections. */
+  Proxy proxy = 5; /** Proxy settings. */
+  Firewall firewall = 6; /** Firewall information. */
+  DnsInfo dns_info = 7; /** DNS information. */
+  GeoIpInfo geoip_info = 8; /** Geolocation information. */
+}
+
+/** IP address details. */
+message Ip {
+  string addr = 1; /** IP address. */
+  string version = 2; /** IP version (v4/v6). */
+  string cidr = 3; /** CIDR notation. */
+}
+
+/** External IP information. */
+message ExternalIp {
+  string ip = 1; /** External IP address. */
+  string forwarded = 2; /** Forwarded IP address, if any. */
+}
+
+/** Geolocation information. */
+message GeoIpInfo {
+  double longitude = 1; /** Longitude. */
+  double latitude = 2; /** Latitude. */
+  int32 accuracy = 3; /** Accuracy of the geolocation. */
+}
+
+/** IP version enum. */
+enum IPVersion {
+  IP_VERSION_V0_UNSPECIFIED = 0; /** Unknown IP version. */
+  IP_VERSION_V4 = 1; /** IPv4. */
+  IP_VERSION_V6 = 2; /** IPv6. */
+}
+
+/** Network interface. */
+message Interface {
+  string name = 1; /** Interface name. */
+  repeated Ip ips = 2; /** List of IP addresses. */
+  string hardware_addr = 3; /** Hardware (MAC) address. */
+}
+
+/** Proxy settings. */
+message Proxy {
+  Ip ip = 1; /** Proxy IP. */
+}
+
+/** DNS information. */
+message DnsInfo {
+  string nameservers = 1; /** DNS nameservers. */
+  string search_domains = 2; /** DNS search domains. */
+  string port = 3; /** DNS port. */
+}
+
+/** Connection state. */
+message ConnectionState {
+  Protocol protocol = 1; /** Connection protocol. */
+  State state = 2; /** Connection state. */
+  Process process = 3; /** Process associated with the connection. */
+  IpPort local = 4; /** Local IP and port. */
+  IpPort remote = 5; /** Remote IP and port. */
+}
+
+/** Process information. */
+message Process {
+  int64 pid = 1; /** Process ID. */
+  string name = 2; /** Process name. */
+  Package package = 3; /** Associated package. */
+  string username = 4; /** User running the process. */
+  string cmdline = 5; /** Command line used to start the process. */
+  string terminal = 6; /** Terminal associated with the process. */
+  string exe = 7; /** Executable path. */
+  int64 create_time = 8; /** Process creation time. */
+  int64 parent = 9; /** Parent process ID. */
+  string status = 10; /** Process status. */
+  double cpu_percent = 11; /** CPU time usage percentage. */
+  double memory_percent = 12; /** Memory usage percentage. */
+  string updated_at = 13; /** Last update date of the process information. */
+}
+
+/** Connection state enum. */
+enum State {
+  STATE_UNKNOWN_UNSPECIFIED = 0; /** Unknown state. */
+  STATE_ESTABLISHED = 1; /** Established connection. */
+  STATE_LISTENING = 2; /** Listening state. */
+}
+
+/** Connection protocol enum. */
+enum Protocol {
+  PROTOCOL_UDP_UNSPECIFIED = 0; /** UDP protocol. */
+  PROTOCOL_TCP = 1; /** TCP protocol. */
+}
+
+/** Association of IP and port. */
+message IpPort {
+  Ip ip = 1; /** IP address. */
+  uint32 port = 2; /** Port number. */
+}
+
+/**
+ * Package details.
+ */
+message Package {
+  string name = 1; /** Package name. */
+  string version = 2; /** Package version. */
+  string architecture = 3; /** Package architecture. */
+  string description = 4; /** Package description. */
+  string upgradable_version = 5; /** Version to which the package can be upgraded. */
+  bool is_up_to_date = 6; /** Whether the package is up to date. */
+}
+
+/**
+ * SSH key information.
+ */
+message SshKeyInfo {
+  string fingerprint = 1; /** SSH key fingerprint. */
+  string type = 2; /** Type of SSH key. */
+  int64 length = 3; /** Key length. */
+  string comment = 4; /** Key comment. */
+  string path = 5; /** Path to the key. */
+  string name = 6; /** Name of the key. */
+  repeated SshKeyOptions options = 7; /** SSH key options. */
+  bool from_authorized_keys = 8; /** Whether from authorized_keys. */
+  string owner = 9; /** Key owner. */
+  string updated_at = 10; /** Last update date of the SSH key information. */
+}
+
+/** SSH key options. */
+message SshKeyOptions {
+  string options = 1; /** Option string. */
+}
+
+/** Known hosts information. */
+message KnownHost {
+  string hostname = 1; /** Hostname of the known host. */
+  string type = 2; /** Type of the key. */
+  string fingerprint = 3; /** Fingerprint of the known host. */
+  string owner = 4; /** Owner of the key. */
+  string updated_at = 5; /** Last update date of the known host information. */
+}
+
+/** SSH key access information. */
+message SshKeyAccess {
+  string fingerprint = 1; /** Fingerprint of the SSH key. */
+  string as_user = 2; /** User associated with the key. */
+  string updated_at = 3; /** Last update date of the SSH key access information. */
+}
+
+/**
+ * Hardware information.
+ */
+message Hardware {
+  Cpu cpu = 1; /** CPU information. */
+  Memory memory = 2; /** Memory information. */
+  repeated Disk disk = 3; /** List of disks. */
+}
+
+/** CPU details. */
+message Cpu {
+  string model = 1; /** CPU model name. */
+  uint32 core = 2; /** Number of cores. */
+  float mhz = 3; /** CPU speed in MHz. */
+}
+
+/** Memory details. */
+message Memory {
+  uint64 total = 1; /** Total memory in bytes. */
+  uint64 used = 2; /** Used memory in bytes. */
+  uint64 swap = 3; /** Swap memory in bytes. */
+}
+
+/** Disk information. */
+message Disk {
+  string uuid = 1; /** Disk UUID. */
+  string device = 2; /** Device name. */
+  repeated DiskPartition partitions = 3; /** List of disk partitions. */
+}
+
+/** Disk partition details. */
+message DiskPartition {
+  string mountpoint = 1; /** Mount point. */
+  string fs_type = 2; /** File system type. */
+  uint64 total = 3; /** Total size in bytes. */
+  uint64 used = 4; /** Used size in bytes. */
+  uint64 free = 5; /** Free size in bytes. */
+  double used_percent = 6; /** Used space percentage. */
+}
+
+/**
+   Application
+*/
+
+message Application {
+  Docker docker = 1;
+}
+
+message Docker {
+  repeated ContainersImages images = 1;
+  repeated Containers containers = 2;
+  repeated DockerNetworks networks = 3;
+}
+message ContainersImages {
+  string id = 1;
+  repeated string repo_tags = 2;
+  int64 created = 3;
+  int64 size = 4;
+  int64 shared_size = 5;
+  string parent_id = 6;
+  repeated string repo_digests = 7;
+  int64 containers = 8; /** Number of containers using this image. */
+  string updated_at = 9; /** Last update date of the container images information. */
+}
+
+message Containers {
+  string id = 1;
+  string name = 2;
+  string image = 3;
+  string command = 4;
+  int64 size_root_fs = 5;
+  repeated ContainerMounts mounts = 6;
+  string state = 7;
+  string status = 8;
+  repeated ContainerPorts ports = 9;
+  repeated ContainerNetworks networks = 10;
+  int64 size_rw = 11;
+  int64 created = 12;
+  string image_id = 13; /** Image ID of the container. */
+  string network_mode = 14; /** Network mode of the container. */
+  string updated_at = 15; /** Last update date of the container information. */
+}
+
+message ContainerMounts {
+  string name = 1;
+  string source = 2;
+  string destination = 3;
+  string driver = 4;
+  string mode = 5;
+  bool rw = 6;
+  string propagation = 7;
+  string type = 8;
+}
+message ContainerPorts {
+  int32 private_port = 1;
+  int32 public_port = 2;
+  string type = 3;
+  string ip = 4;
+}
+
+message ContainerNetworks {
+  string mac_address = 1;
+  int64 ip_prefix_len = 2;
+  string ip_address = 3;
+  string gateway = 4;
+  string endpoint_id = 5;
+  string network_id = 6;
+}
+
+message DockerNetworks {
+  string id = 1;
+  string name = 2;
+  string scope = 3;
+  string driver = 4;
+  bool internal = 5;
+  string updated_at = 6; /** Last update date of the docker networks information. */
+}
+
+message Firewall {
+  string version = 1;
+  repeated FirewallRule rules = 2;
+}
+
+message FirewallRule {
+  string chain = 1;
+  string method_negate = 2;
+  string method_deny = 3;
+  string method_accept = 4;
+  string param_count = 5;
+  string value_count_input = 6;
+  string value_count_output = 7;
+  string param_chain = 8;
+  string value_chain = 9;
+  string param_select_input = 10;
+  string value_select_input = 11;
+  string param_select_output = 12;
+  string value_select_output = 13;
+  string param_jump = 14;
+  string value_jump = 15;
+  string param_match = 16;
+  string value_match = 17;
+  string param_protocol = 18;
+  string value_protocol = 19;
+  string param_source = 20;
+  string value_source = 21;
+  string param_destination = 22;
+  string value_destination = 23;
+  string param_destination_port = 24;
+  string value_destination_port = 25;
+  string param_destination_type = 26;
+  string value_destination_type = 27;
+  string param_cstate = 28;
+  string value_cstate = 29;
+  string param_source_port = 30;
+  string value_source_port = 31;
+  string param_limit = 32;
+  string value_limit = 33;
+  string param_limit_burst = 34;
+  string value_limit_burst = 35;
+  string param_icmp_type = 36;
+  string value_icmp_type = 37;
+}

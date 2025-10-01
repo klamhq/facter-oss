@@ -1,0 +1,15 @@
+FROM golang:1.24
+
+WORKDIR /tmp/facter
+
+COPY . /tmp/facter
+
+RUN apt update && apt install  make
+
+RUN make buildLinux
+
+RUN cp /tmp/facter/bin/facter /usr/local/bin/facter
+
+RUN cp /tmp/facter/configs/config-facter-only.yml /usr/local/bin/
+
+ENTRYPOINT ["/usr/local/bin/facter", "--config", "/usr/local/bin/config-facter-only.yml"]

@@ -1,0 +1,31 @@
+FROM rockylinux:8.9
+
+RUN yum install -y openssh && mkdir -p /root/.ssh
+RUN ssh-keygen -q -C "istia@comment"  -t rsa -N '' -f /root/.ssh/id_rsa
+RUN cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys
+RUN ssh-keygen -q -b 4096 -C "istiaOther@comment"  -t rsa -N '' -f /root/.ssh/id_rsa_other
+RUN cat /root/.ssh/id_rsa_other.pub >> /root/.ssh/authorized_keys
+RUN ssh-keygen -q -b 1024 -C "dsa@comment"  -t dsa -N '' -f /root/.ssh/id_dsa_other
+RUN cat /root/.ssh/id_dsa_other.pub >> /root/.ssh/authorized_keys
+RUN ssh-keygen -b 256 -q -C "ecdsa@comment"  -t ecdsa -N '' -f /root/.ssh/id_ecdsa_other
+RUN cat /root/.ssh/id_ecdsa_other.pub >> /root/.ssh/authorized_keys
+
+RUN yum install gcc make sudo scap-security-guide -y 
+ENV GO_VERSION 1.24.3
+RUN curl -L https://golang.org/dl/go$GO_VERSION.linux-amd64.tar.gz -o go$GO_VERSION.linux-amd64.tar.gz && tar -C /usr/local -xzf go$GO_VERSION.linux-amd64.tar.gz && rm -f go$GO_VERSION.linux-amd64.tar.gz
+ENV PATH /usr/local/go/bin:$PATH
+ENV GOROOT /usr/local/go
+
+WORKDIR /tmp/facter
+
+COPY . /tmp/facter
+
+RUN useradd -m -s /bin/bash rockyuser && usermod -aG wheel rockyuser
+
+RUN make buildLinux
+
+RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.62.1
+
+RUN cp /tmp/facter/bin/facter /usr/local/bin/facter
+
+ENTRYPOINT ["/usr/local/bin/facter", "agent", "--config", "/tmp/facter/configs/config-facter-only-mac-docker.yml"]

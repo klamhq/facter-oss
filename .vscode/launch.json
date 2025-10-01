@@ -1,0 +1,27 @@
+{
+    // Utilisez IntelliSense pour en savoir plus sur les attributs possibles.
+    // Pointez pour afficher la description des attributs existants.
+    // Pour plus d'informations, visitez : https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "debug facter agent",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "./cmd/facter/main.go",
+            "args": "agent --config ../../configs/config-facter-only.yml",
+        },
+        {
+            "name": "debug facter agent mac",
+            "type": "go",
+            "request": "launch",
+            "mode": "debug",
+            "program": "./cmd/facter/main.go",
+            "env": {
+                "DOCKER_HOST": "unix:///var/run/docker.sock"
+            },
+            "args": "agent --config ../../configs/config-facter-local-mac.yml"
+        },
+    ]
+}
