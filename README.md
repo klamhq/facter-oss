@@ -6,7 +6,7 @@
 
 ### Facter
 
-// TODO doc on facter
+[Doc Website](https://klamhq.github.io/facter-oss)
 
 ## Performance Profiling 
 

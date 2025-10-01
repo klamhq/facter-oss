@@ -1,4 +1,4 @@
-name: ci 
+name: Build/Publish develop Release Docs 
 on:
   push:
     branches:
@@ -25,4 +25,4 @@ jobs:
           restore-keys: |
             mkdocs-material-
       - run: pip install mkdocs-material 
-      - run: mkdocs gh-deploy --force
+      - run: mike deploy --push develop
