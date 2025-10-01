@@ -1,6 +1,9 @@
 name: Build/Publish develop Release Docs 
 on:
   push:
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yml'
     branches:
       - main
 permissions:
