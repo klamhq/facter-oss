@@ -1,6 +1,9 @@
 name: Build/Publish develop Release Docs 
 on:
   push:
+    paths:
+      - 'docs/**'
+      - 'mkdocs.yml'
     branches:
       - main
 permissions:
@@ -25,4 +28,10 @@ jobs:
           restore-keys: |
             mkdocs-material-
       - run: pip install mkdocs-material mike
-      - run: mike deploy --push develop
+      - name: Fetch gh-pages
+        run: |
+          git fetch origin gh-pages --depth=1
+
+      - name: Build & publish docs with mike
+        run: |
+          mike deploy --push --update-aliases --remote origin --branch gh-pages develop
