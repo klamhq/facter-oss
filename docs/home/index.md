@@ -7,5 +7,3 @@
 ## Features
 
 ## Demo
-
-## Enterprise version
