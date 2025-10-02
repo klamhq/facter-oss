@@ -1,6 +1,7 @@
 package sink
 
 import (
+	"fmt"
 	"os"
 	"path"
 
@@ -12,9 +13,14 @@ import (
 )
 
 func exportToFile(inventoryMsg *schema.InventoryRequest, logger *logrus.Logger, cfg *options.RunOptions) error {
+	if inventoryMsg == nil {
+		err := fmt.Errorf("inventoryMsg is nil")
+		logger.WithError(err).Error("Cannot marshal nil protobuf message")
+		return err
+	}
 	bin, err := proto.Marshal(inventoryMsg)
 	if err != nil {
-		logger.WithError(err).Fatal("Unable to marshal protobuf message")
+		logger.WithError(err).Error("Unable to marshal protobuf message")
 		return err
 	}
 
@@ -26,7 +32,7 @@ func exportToFile(inventoryMsg *schema.InventoryRequest, logger *logrus.Logger, 
 			}
 			dest := path.Join(cfg.Facter.Sink.Output.OutputDirectory, cfg.Facter.Sink.Output.OutputFilename)
 			if err := os.WriteFile(dest, bin, 0644); err != nil {
-				logger.WithError(err).Fatal("Unable to write message")
+				logger.WithError(err).Error("Unable to write message")
 				return err
 			}
 			logger.Infof("File saved to %s", dest)
