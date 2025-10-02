@@ -12,6 +12,7 @@ type InventoryStore interface {
 	Get(hostname string) (*schema.HostInventory, error)
 	Save(hostname string, inv *schema.HostInventory) error
 	Delete(hostname string) error
+	Close() error
 }
 
 type boltInventoryStore struct {
@@ -62,4 +63,11 @@ func (b *boltInventoryStore) Delete(hostname string) error {
 		bucket := tx.Bucket([]byte(inventoryBucket))
 		return bucket.Delete([]byte(hostname))
 	})
+}
+
+func (b *boltInventoryStore) Close() error {
+	if b == nil || b.db == nil {
+		return nil
+	}
+	return b.db.Close()
 }

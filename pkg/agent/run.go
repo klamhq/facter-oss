@@ -65,14 +65,17 @@ func Run(cfg *options.RunOptions) {
 
 	inventory, err := b.Build(context.Background())
 	if err != nil {
-		logger.WithError(err).Fatal("Unable to build inventory")
+		logger.WithError(err).Error("Unable to build inventory")
 	}
 	inventoryMsg, fullInventory := b.ManageDelta(inventory)
 	if inventoryMsg == nil {
 		logger.Info("No inventory changes detected, nothing to do !")
 	}
 
-	sink.SinkInventory(cfg, logger, b.Store, inventoryMsg, fullInventory)
+	err = sink.SinkInventory(cfg, logger, b.Store, inventoryMsg, fullInventory)
+	if err != nil {
+		logger.WithError(err).Error("Failed to sink inventory")
+	}
 
 	elapsed := time.Since(start).Round(time.Millisecond)
 	logger.Infof("Runned in %s", elapsed)
