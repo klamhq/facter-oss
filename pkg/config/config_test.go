@@ -61,6 +61,12 @@ func TestValidateConfigPath_NonExistent(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestValidateConfigPath_Directory(t *testing.T) {
+	tmpDir := t.TempDir()
+	err := ValidateConfigPath(tmpDir)
+	assert.Error(t, err)
+}
+
 func TestParseFlags(t *testing.T) {
 	// Create a temp config file to point to
 	tmpDir := t.TempDir()
@@ -75,4 +81,23 @@ func TestParseFlags(t *testing.T) {
 	returnedPath, err := ParseFlags()
 	assert.NoError(t, err)
 	assert.Equal(t, configPath, returnedPath)
+}
+
+func TestParseFlags_InvalidPath(t *testing.T) {
+	// Simulate command line argument with invalid path
+	os.Args = []string{"cmd", "--config", "nonexistent.yml"}
+
+	_, err := ParseFlags()
+	assert.Error(t, err)
+}
+
+func TestParseFlags_DirectoryPath(t *testing.T) {
+	// Create a temp directory to simulate directory path
+	tmpDir := t.TempDir()
+
+	// Simulate command line argument with directory path
+	os.Args = []string{"cmd", "--config", tmpDir}
+
+	_, err := ParseFlags()
+	assert.Error(t, err)
 }
