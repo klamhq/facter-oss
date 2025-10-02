@@ -4,7 +4,7 @@ site_dir: public
 repo_name: klamhq/facter-oss
 repo_url: https://github.com/klamhq/facter-oss
 nav:
-  - Home: home/index.md
+  - Home: index.md
   - Concepts: concepts/index.md
   - Deployments: deployments/index.md
   - Settings: settings/index.md
