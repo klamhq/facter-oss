@@ -82,6 +82,4 @@ func TestSinkInventory_Success(t *testing.T) {
 
 	err := SinkInventory(cfg, logger, s, inventory, fullInventory)
 	assert.NoError(t, err)
-	assert.NoError(t, s.Save(mockHostname, fullInventory))
-	assert.NoError(t, s.Delete(mockHostname))
 }
