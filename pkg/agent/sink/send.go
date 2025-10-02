@@ -25,6 +25,8 @@ func SinkInventory(cfg *options.RunOptions, logger *logrus.Logger, store store.I
 		return err
 	}
 	logger.Infof("Inventory for host %s saved to local store %s", hostname, cfg.Facter.Store.Path)
-
+	if err := store.Close(); err != nil {
+		logger.WithError(err).Error("Failed to close inventory store")
+	}
 	return nil
 }
