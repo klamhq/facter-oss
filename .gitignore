@@ -2,7 +2,6 @@
 cover*
 ./tests/cover*
 main
-data
 *.buf
 bin
 *.vagrant

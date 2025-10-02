@@ -1,4 +1,4 @@
-name: Generate code coverage badge
+name: Go Test and generate code coverage badge
 permissions:
   contents: write
 
