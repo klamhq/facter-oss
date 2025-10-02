@@ -22,6 +22,7 @@ func SinkInventory(cfg *options.RunOptions, logger *logrus.Logger, store store.I
 	}
 	if err := store.Save(hostname, fullInventory); err != nil {
 		logger.Error("Failed to save inventory:", err)
+		return err
 	}
 	logger.Infof("Inventory for host %s saved to local store %s", hostname, cfg.Facter.Store.Path)
 
