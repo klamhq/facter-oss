@@ -1,4 +1,6 @@
 name: Generate code coverage badge
+permissions:
+  contents: write
 
 on:
   pull_request:
