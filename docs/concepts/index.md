@@ -2,6 +2,8 @@
 
 ## Goals
 
+TODO
+
 ## Architecture
 
 ## Facts inventory
