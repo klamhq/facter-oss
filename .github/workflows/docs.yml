@@ -30,7 +30,7 @@ jobs:
       - run: pip install mkdocs-material mike
       - name: Fetch gh-pages
         run: |
-          git fetch origin gh-pages --depth=1
+          git fetch origin gh-pages --depth=1 || echo "No gh-pages branch"
 
       - name: Build & publish docs with mike
         run: |
