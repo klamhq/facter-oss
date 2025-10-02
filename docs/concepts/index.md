@@ -6,4 +6,8 @@ TODO
 
 ## Architecture
 
+TODO
+
 ## Facts inventory
+
+TODO
