@@ -106,3 +106,27 @@ func TestParseUserLine_InvalidLines(t *testing.T) {
 		assert.Equal(t, "@", user.Gid)
 	})
 }
+
+func TestGetConnectedUsers(t *testing.T) {
+	logger := logrus.New()
+	connectedUser := GetConnectedUsers(logger)
+	assert.NotNil(t, connectedUser)
+}
+
+func TestCheckSudoRootFail(t *testing.T) {
+	logger := logrus.New()
+	b, err := checkSudoRoot("user", logger)
+	assert.False(t, b)
+	assert.Error(t, err)
+}
+
+func TestMergeUsersAndSessions(t *testing.T) {
+	logger := logrus.New()
+	users, err := GetSystemUsers("/etc/passwd", logger)
+	assert.NoError(t, err)
+	connectedUser := GetConnectedUsers(logger)
+	assert.NotNil(t, connectedUser)
+	mergeUsers := MergeUsersAndSessions(users, connectedUser)
+	assert.NotEmpty(t, mergeUsers)
+
+}

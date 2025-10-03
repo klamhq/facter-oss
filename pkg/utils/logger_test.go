@@ -32,3 +32,25 @@ func TestStdLogger_ReportCaller(t *testing.T) {
 	logger := factory.New(logrus.DebugLevel)
 	assert.True(t, logger.ReportCaller)
 }
+func TestDefaultLoggerFactory_ImplementsLoggerFactory(t *testing.T) {
+	var factory interface{} = &DefaultLoggerFactory{}
+	_, ok := factory.(LoggerFactory)
+	assert.True(t, ok, "DefaultLoggerFactory should implement LoggerFactory interface")
+}
+
+func TestStdLogger_DifferentLevels(t *testing.T) {
+	factory := &DefaultLoggerFactory{}
+	levels := []logrus.Level{
+		logrus.PanicLevel,
+		logrus.FatalLevel,
+		logrus.ErrorLevel,
+		logrus.WarnLevel,
+		logrus.InfoLevel,
+		logrus.DebugLevel,
+		logrus.TraceLevel,
+	}
+	for _, level := range levels {
+		logger := factory.New(level)
+		assert.Equal(t, level, logger.GetLevel(), "Logger level should be set correctly")
+	}
+}
