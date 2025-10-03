@@ -61,6 +61,18 @@ func TestIsDeltaEmpty(t *testing.T) {
 	assert.False(t, IsDeltaEmpty(delta))
 }
 
+func TestStableHash(t *testing.T) {
+	p1 := &schema.Package{Name: "pkg1", Version: "1.0.0"}
+	p2 := &schema.Package{Name: "pkg1", Version: "1.0.0"}
+	p3 := &schema.Package{Name: "pkg2", Version: "1.0.0"}
+
+	hash1 := StableHash(p1)
+	hash2 := StableHash(p2)
+	hash3 := StableHash(p3)
+
+	assert.Equal(t, hash1, hash2, "Hashes for identical packages should match")
+	assert.NotEqual(t, hash1, hash3, "Hashes for different packages should not match")
+}
 func TestDiffByHash(t *testing.T) {
 	oldList := []*schema.Package{
 		{Name: "pkg1", Version: "1.0.0"},

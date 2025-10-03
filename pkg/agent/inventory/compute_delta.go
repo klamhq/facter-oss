@@ -13,7 +13,7 @@ import (
 	"google.golang.org/protobuf/testing/protocmp"
 )
 
-// StableHash return determinist hash from protobug message
+// StableHash return determinist hash from protobuf message
 func StableHash(msg proto.Message) uint64 {
 	b, _ := protojson.MarshalOptions{
 		EmitUnpopulated: true, // Inclure les champs "vides"
