@@ -88,7 +88,7 @@ func TestIsPrivateKeyFile_EmptyFile(t *testing.T) {
 	assert.NoError(t, err)
 	assert.False(t, isPrivateKeyFile(file))
 }
-func TestparseFile_PubAndAuthorizedKeys(t *testing.T) {
+func TestParseFile_PubAndAuthorizedKeys(t *testing.T) {
 	dir := t.TempDir()
 
 	// Create a .pub file
@@ -117,7 +117,7 @@ func TestparseFile_PubAndAuthorizedKeys(t *testing.T) {
 	assert.Len(t, knownHosts, 0)
 }
 
-func TestparseFile_PrivateKeySkipped(t *testing.T) {
+func TestParseFile_PrivateKeySkipped(t *testing.T) {
 	dir := t.TempDir()
 
 	// Create a private key file
@@ -136,7 +136,7 @@ func TestparseFile_PrivateKeySkipped(t *testing.T) {
 	assert.Len(t, knownHosts, 0)
 }
 
-func TestparseFile_KnownHosts(t *testing.T) {
+func TestParseFile_KnownHosts(t *testing.T) {
 	dir := t.TempDir()
 
 	// Create a known_hosts file with a valid entry
@@ -157,7 +157,7 @@ func TestparseFile_KnownHosts(t *testing.T) {
 	assert.Equal(t, "ssh-rsa", knownHosts[0].Type)
 }
 
-func TestparseFile_KnownHostsFail(t *testing.T) {
+func TestParseFile_KnownHostsFail(t *testing.T) {
 	dir := t.TempDir()
 
 	// Create a known_hosts file with a valid entry
@@ -176,7 +176,7 @@ func TestparseFile_KnownHostsFail(t *testing.T) {
 	assert.Len(t, knownHosts, 0)
 }
 
-func TestparseFile_SkipsNonRegularFiles(t *testing.T) {
+func TestParseFile_SkipsNonRegularFiles(t *testing.T) {
 	dir := t.TempDir()
 
 	// Create a directory entry
@@ -194,7 +194,7 @@ func TestparseFile_SkipsNonRegularFiles(t *testing.T) {
 	assert.Len(t, knownHosts, 0)
 }
 
-func TestparseFile_UnknownFileType(t *testing.T) {
+func TestParseFile_UnknownFileType(t *testing.T) {
 	dir := t.TempDir()
 
 	// Create a file with unknown extension
