@@ -76,3 +76,17 @@ func TestDeleteInventory(t *testing.T) {
 	assert.NotNil(t, retrieved, "Retrieved inventory should not be nil after deletion")
 
 }
+
+func TestCloseStore(t *testing.T) {
+	path := path.Join(t.TempDir(), "test.db")
+	store, err := NewBoltInventoryStore(path)
+	assert.NoError(t, err)
+	err = store.Close()
+	assert.NoError(t, err)
+}
+
+func TestCloseNilStore(t *testing.T) {
+	var store *boltInventoryStore
+	err := store.Close()
+	assert.NoError(t, err)
+}

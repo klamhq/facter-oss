@@ -1,6 +1,6 @@
 OUTPUT:= bin
-BIN := facter
-BIN_MAC := facter
+BIN := facter-oss
+BIN_MAC := facter-oss
 BUILD_ENV := GOOS=linux GOARCH=amd64
 BUILD_FLAGS := -tags netgo -ldflags '-w'
 VERBOSE := -x -v

@@ -24,7 +24,7 @@ import (
 // RunAgent is the main function to run the agent.
 // It collects system facts, crafts a protobuf message, and sends it to the configured output.
 // It also handles performance profiling if enabled in the configuration.
-func Run(cfg *options.RunOptions) {
+func Run(cfg *options.RunOptions) error {
 	start := time.Now() // Used to mesure running duration
 	// get default value
 	options.DefaultNewRunOptions()
@@ -65,15 +65,21 @@ func Run(cfg *options.RunOptions) {
 
 	inventory, err := b.Build(context.Background())
 	if err != nil {
-		logger.WithError(err).Fatal("Unable to build inventory")
+		logger.WithError(err).Error("Unable to build inventory")
+		return err
 	}
 	inventoryMsg, fullInventory := b.ManageDelta(inventory)
 	if inventoryMsg == nil {
 		logger.Info("No inventory changes detected, nothing to do !")
 	}
 
-	sink.SinkInventory(cfg, logger, b.Store, inventoryMsg, fullInventory)
+	err = sink.SinkInventory(cfg, logger, b.Store, inventoryMsg, fullInventory)
+	if err != nil {
+		logger.WithError(err).Error("Failed to sink inventory")
+		return err
+	}
 
 	elapsed := time.Since(start).Round(time.Millisecond)
 	logger.Infof("Runned in %s", elapsed)
+	return nil
 }
