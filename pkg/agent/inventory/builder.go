@@ -42,7 +42,6 @@ type Builder struct {
 	SSHInfos       ssh.SSHInfosCollector
 }
 
-// NewBuilder prépare un orchestrateur prêt à l’emploi.
 func NewBuilder(cfg options.RunOptions, systemGather *models.System, logger *logrus.Logger) *Builder {
 	// If users collection is disabled, disable SSH collection too
 	if !cfg.Facter.Inventory.User.Enabled {
@@ -241,12 +240,11 @@ func (b *Builder) Build(ctx context.Context) (*schema.HostInventory, error) {
 func (b *Builder) ManageDelta(fullInventory *schema.HostInventory) (*schema.InventoryRequest, *schema.HostInventory) {
 	// Retrieve the old inventory from BoltDB
 	previous, err := b.Store.Get(fullInventory.Hostname)
-
 	var result *schema.InventoryRequest
 
 	// Check if previous inventory exists, compute delta and send it else send full inventory
 	if err != nil || previous == nil {
-		b.Log.Info("No previous inventory, sending full")
+		b.Log.Info("No previous inventory, computing full inventory")
 		result = &schema.InventoryRequest{
 			Content: &schema.InventoryRequest_Full{Full: fullInventory},
 		}

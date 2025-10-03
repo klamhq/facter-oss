@@ -3,7 +3,6 @@ package ssh
 import (
 	"bufio"
 	"bytes"
-	"crypto"
 	"crypto/ecdsa"
 	"crypto/ed25519"
 	"crypto/rsa"
@@ -16,32 +15,8 @@ import (
 
 	"github.com/klamhq/facter-oss/pkg/models"
 	"github.com/sirupsen/logrus"
-	sshkey "github.com/yosida95/golang-sshkey"
 	"golang.org/x/crypto/ssh"
 )
-
-// GetFingerprint get ssh key fingerprint
-func GetFingerprint(key sshkey.PublicKey) string {
-	fingerprint, err := sshkey.PrettyFingerprint(key, crypto.MD5)
-	if err != nil {
-		logrus.Errorf("Unable to get fingerprint %v", err)
-	}
-	return fingerprint
-}
-
-// GetKeyType get key type (rsa, ecdsa,...)
-func GetKeyType(keyType sshkey.Type) string {
-	switch keyType {
-	case sshkey.KEY_RSA:
-		return "rsa"
-	case sshkey.KEY_DSA:
-		return "dsa"
-	case sshkey.KEY_ECDSA:
-		return "ecdsa"
-	default:
-		return "unknown"
-	}
-}
 
 // GetPath from ssh keys or autorized keys files
 func GetPath(path string) (string, string) {
@@ -174,12 +149,13 @@ func parseFile(logger *logrus.Logger, entries []os.DirEntry, dirname string) ([]
 			case ".pub":
 				keyPub = append(keyPub, fullPath)
 			default:
-				if name == "authorized_keys" {
+				switch name {
+				case "authorized_keys":
 					logger.Debugf("Found authorized_keys file: %v", fullPath)
 					keyPub = append(keyPub, fullPath)
-				} else if name == "known_hosts" {
+				case "known_hosts":
 					knownHost = parseKnownHostsSkipHashed(logger, entry, dirname)
-				} else {
+				default:
 					logger.Debugf("File %v does not match expected SSH key file patterns", fullPath)
 				}
 			}
@@ -210,10 +186,7 @@ func parseKnownHostsSkipHashed(logger *logrus.Logger, entry os.DirEntry, dirname
 			logger.Warnf("Error parsing line in %s: %v", fullPath, err)
 			continue
 		}
-		if len(hosts) == 0 {
-			logger.Warnf("No hosts found in line: %s", line)
-			continue
-		}
+
 		// Vérifier si la ligne est hashée : on la skippe
 		if len(hosts) == 1 && strings.HasPrefix(hosts[0], "|1|") {
 			logger.Debugf("Skipping hashed known_hosts entry: %v", hosts[0])
@@ -281,10 +254,7 @@ func GetSshInfo(logger *logrus.Logger, homeDirs []string) ([]models.SshKeyInfo, 
 
 	pubKeyInfos := ReadPubKeyFile(logger, files)
 
-	keyAccess, err := ParseAuthFiles(logger, files)
-	if err != nil {
-		logger.Warnf("Error parsing authorized keys files: %v", err)
-	}
+	keyAccess := ParseAuthFiles(logger, files)
 
 	return pubKeyInfos, keyAccess, knownHost
 }
@@ -317,7 +287,7 @@ func GetAllSshFiles(logger *logrus.Logger, homeDirs []string) ([]string, []model
 
 // ParseAuthFiles reads authorized keys files and extracts SSH key access information.
 // It returns a slice of SshKeyAccess models containing the fingerprint and associated user.
-func ParseAuthFiles(logger *logrus.Logger, authFiles []string) ([]models.SshKeyAccess, error) {
+func ParseAuthFiles(logger *logrus.Logger, authFiles []string) []models.SshKeyAccess {
 	var sshAuthKey []models.SshKeyAccess
 
 	for _, authorizedKeyFile := range authFiles {
@@ -353,7 +323,7 @@ func ParseAuthFiles(logger *logrus.Logger, authFiles []string) ([]models.SshKeyA
 		}
 	}
 
-	return sshAuthKey, nil
+	return sshAuthKey
 }
 
 // getUsernameFromPath extracts the username from a given file path.
