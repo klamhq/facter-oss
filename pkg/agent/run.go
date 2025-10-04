@@ -43,7 +43,11 @@ func Run(cfg *options.RunOptions) error {
 	}
 	systemGather := system.GetSystem()
 
-	b := inventory.NewBuilder(*cfg, systemGather, logger)
+	b, err := inventory.NewBuilder(*cfg, systemGather, logger)
+	if err != nil {
+		logger.WithError(err).Error("Run")
+		return err
+	}
 
 	b.Platform = platform.New(b.Log, &b.Cfg.Facter.Inventory.Platform, models.SystemPaths{
 		InitCheckPath: b.Cfg.Facter.Inventory.Platform.System.InitCheckPath,
@@ -71,6 +75,7 @@ func Run(cfg *options.RunOptions) error {
 	inventoryMsg, fullInventory := b.ManageDelta(inventory)
 	if inventoryMsg == nil {
 		logger.Info("No inventory changes detected, nothing to do !")
+		return nil
 	}
 
 	err = sink.SinkInventory(cfg, logger, b.Store, inventoryMsg, fullInventory)

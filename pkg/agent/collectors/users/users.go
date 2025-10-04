@@ -172,7 +172,7 @@ func userCanLogin(shell string) bool {
 func checkSudoRoot(user string, logger *logrus.Logger) (bool, error) {
 	checkBecomeRoot, err := exec.Command("sudo", "-l", "-U", user).CombinedOutput()
 	if err != nil {
-		logger.Errorf("Error during exection of sudo -l -U %s: %s, %s", user, checkBecomeRoot, err)
+		logger.Errorf("Error during execution of sudo -l -U %s: %s, %s", user, checkBecomeRoot, err)
 		return false, err
 	}
 

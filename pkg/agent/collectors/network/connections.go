@@ -17,7 +17,7 @@ func Connections(logger *logrus.Logger) ([]*schema.ConnectionState, error) {
 	if err != nil {
 		return nil, err
 	}
-	var connections []*schema.ConnectionState
+	connections := make([]*schema.ConnectionState, 0, len(cnx))
 	var state schema.State
 	for _, c := range cnx {
 		if c.State == "ESTABLISHED" {
@@ -63,7 +63,7 @@ func getConnections(logger *logrus.Logger) ([]models.Connections, error) {
 		return nil, err
 	}
 
-	var results []models.Connections
+	results := make([]models.Connections, 0, len(conns))
 	pkgExtract, err := packages.NewPackageExtractor(logger)
 	if err != nil {
 		logger.Errorf("Unable to extract package from exe path: %v", err)

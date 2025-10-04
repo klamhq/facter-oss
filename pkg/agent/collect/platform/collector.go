@@ -29,9 +29,6 @@ func New(log *logrus.Logger, cfg *options.PlatformOptions, paths models.SystemPa
 		systemGather: systemGather,
 	}
 }
-
-func (c *PlatformCollectorImpl) Name() string { return "platform" }
-
 func (c *PlatformCollectorImpl) CollectPlatform(ctx context.Context) (*schema.Platform, error) {
 	c.log.Info("Crafting platform")
 
@@ -116,7 +113,7 @@ func (c *PlatformCollectorImpl) fillHardware(p *schema.Platform) {
 	}
 
 	// Disks
-	var out []*schema.Disk
+	out := make([]*schema.Disk, 0, len(disks))
 	for _, d := range disks {
 		var parts []*schema.DiskPartition
 		for _, p := range d.Partitions {

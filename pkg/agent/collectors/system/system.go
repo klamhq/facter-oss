@@ -141,7 +141,7 @@ func getDisk() []models.Disk {
 		})
 	}
 
-	var result []models.Disk
+	result := make([]models.Disk, 0, len(disksMap))
 	for _, d := range disksMap {
 		result = append(result, *d)
 	}

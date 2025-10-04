@@ -22,9 +22,6 @@ func New(log *logrus.Logger, cfg *options.PackagesOptions) *PackagesCollectorImp
 		cfg: cfg,
 	}
 }
-
-func (c *PackagesCollectorImpl) Name() string { return "packages" }
-
 func (c *PackagesCollectorImpl) CollectPackages(ctx context.Context) ([]*schema.Package, error) {
 	c.log.Info("Crafting packages")
 

@@ -209,8 +209,8 @@ func parseKnownHostsSkipHashed(logger *logrus.Logger, entry os.DirEntry, dirname
 // ReadPubKeyFile reads public key files from the specified paths.
 // It returns a slice of SshKeyInfo models containing the key values and their paths.
 func ReadPubKeyFile(logger *logrus.Logger, pubKeyFiles []string) []models.SshKeyInfo {
-	var keyValues []string
-	var keyPaths []string
+	keyValues := make([]string, 0, len(pubKeyFiles))
+	keyPaths := make([]string, 0, len(pubKeyFiles))
 
 	for _, file := range pubKeyFiles {
 		logger.Debugf("Reading public key file: %s", file)

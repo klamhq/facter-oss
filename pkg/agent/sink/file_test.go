@@ -1,7 +1,6 @@
 package sink
 
 import (
-	"fmt"
 	"os"
 	"path/filepath"
 	"testing"
@@ -14,7 +13,6 @@ import (
 
 func tempDir(t *testing.T) string {
 	dir, err := os.MkdirTemp("", "exportToFileTest")
-	fmt.Println(dir)
 	assert.NoError(t, err)
 	t.Cleanup(func() { os.RemoveAll(dir) })
 	return dir

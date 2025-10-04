@@ -1,7 +1,6 @@
 package store
 
 import (
-	"fmt"
 	"path"
 	"testing"
 	"time"
@@ -33,8 +32,6 @@ func TestSaveAndGetInventory(t *testing.T) {
 	assert.NoError(t, err)
 
 	retrieved, err := store.Get("test-host")
-	fmt.Println(inv.Packages[0])
-	fmt.Println(retrieved.Packages[0])
 	assert.NoError(t, err)
 
 	assert.Equal(t, inv.Users[0].Username, retrieved.Users[0].Username, "Usernames should match")

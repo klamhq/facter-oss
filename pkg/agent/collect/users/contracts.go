@@ -7,6 +7,5 @@ import (
 )
 
 type UsersCollector interface {
-	Name() string
 	CollectUsers(ctx context.Context) ([]*schema.User, error)
 }

@@ -22,8 +22,6 @@ func New(log *logrus.Logger, cfg *options.ProcessOptions) *ProcessCollectorImpl 
 	}
 }
 
-func (c *ProcessCollectorImpl) Name() string { return "process" }
-
 func (c *ProcessCollectorImpl) CollectProcess(ctx context.Context) ([]*schema.Process, error) {
 	c.log.Info("Crafting process")
 	collectedProcess, err := process.Processes(c.log)
