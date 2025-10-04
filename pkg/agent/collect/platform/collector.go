@@ -29,9 +29,6 @@ func New(log *logrus.Logger, cfg *options.PlatformOptions, paths models.SystemPa
 		systemGather: systemGather,
 	}
 }
-
-func (c *PlatformCollectorImpl) Name() string { return "platform" }
-
 func (c *PlatformCollectorImpl) CollectPlatform(ctx context.Context) (*schema.Platform, error) {
 	c.log.Info("Crafting platform")
 

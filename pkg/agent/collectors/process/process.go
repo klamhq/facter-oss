@@ -20,7 +20,7 @@ func Processes(logger *logrus.Logger) ([]*schema.Process, error) {
 	if err != nil {
 		return nil, err
 	}
-	var processes []*schema.Process
+	processes := make([]*schema.Process, 0, len(procs))
 	for _, p := range procs {
 		proc := schema.Process{
 			Pid:           p.PID,
@@ -50,7 +50,7 @@ func getProcess(logger *logrus.Logger, pkgExtractor *packages.PackageExtractor) 
 		return nil, err
 	}
 
-	var processes []*models.Process
+	processes := make([]*models.Process, 0, len(proc))
 	for _, p := range proc {
 		pid := p.Pid
 

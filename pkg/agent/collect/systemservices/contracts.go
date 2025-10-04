@@ -7,6 +7,5 @@ import (
 )
 
 type SystemServicesCollector interface {
-	Name() string
 	CollectSystemServices(ctx context.Context, initsystem string) ([]*schema.SystemdService, error)
 }
