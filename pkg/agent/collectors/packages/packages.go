@@ -74,7 +74,6 @@ func (e *PackageExtractRegexpBased) Extract(ctx context.Context, logger *logrus.
 
 	lines := strings.Split(string(output), "\n")
 
-	// Canal pour collecter les résultats
 	ch := make(chan *models.Package, len(lines))
 	wg := sync.WaitGroup{}
 
@@ -88,13 +87,11 @@ func (e *PackageExtractRegexpBased) Extract(ctx context.Context, logger *logrus.
 		}(line)
 	}
 
-	// Fermeture du canal quand toutes les goroutines sont terminées
 	go func() {
 		wg.Wait()
 		close(ch)
 	}()
 
-	// Collecte des résultats dans un slice local
 	result := []*models.Package{}
 	for pkg := range ch {
 		result = append(result, pkg)
@@ -121,7 +118,7 @@ func (e *PackageExtractRegexpBased) parseSingleLine(line string) *models.Package
 			}
 			/*
 				This part is used to set dynamically structure's fields by ascending order of extracted value by the regexp.
-				Be carefull when defining a new type of structure.
+				Be careful when defining a new type of structure.
 			*/
 
 			reflect.ValueOf(&item).Elem().Field(i - 1).SetString(matches[i])
