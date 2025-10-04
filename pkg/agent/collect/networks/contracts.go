@@ -7,6 +7,5 @@ import (
 )
 
 type NetworksCollector interface {
-	Name() string
 	CollectNetworks(ctx context.Context) (*schema.Network, error)
 }

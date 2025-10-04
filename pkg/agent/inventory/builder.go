@@ -4,6 +4,7 @@ import (
 	"context"
 	"os/user"
 	"runtime"
+	"sync"
 	"time"
 
 	"github.com/klamhq/facter-oss/pkg/agent/collect/applications"
@@ -102,25 +103,32 @@ func (b *Builder) Build(ctx context.Context) (*schema.HostInventory, error) {
 		knownHosts   []*schema.KnownHost
 		networks     *schema.Network
 		apps         []*schema.Application
-		err          error
+		mu           sync.Mutex
 	)
 
 	g.Go(func() error {
 		if b.Cfg.Facter.Inventory.Platform.Enabled && b.Platform != nil {
 			start := time.Now()
-			platform, err = b.Platform.CollectPlatform(ctx)
-			if err != nil {
-				b.Log.WithError(err).Error("platform")
+			p, e := b.Platform.CollectPlatform(ctx)
+			if e != nil {
+				b.Log.WithError(e).Error("platform")
 			}
+			mu.Lock()
+			platform = p
+			mu.Unlock()
 			defer func(n string) { b.Log.WithField("collector", n).WithField("dur", time.Since(start)).Info("done") }("platform")
 		}
 		g.Go(func() error {
 			if b.Cfg.Facter.Inventory.SystemdService.Enabled {
+				pLocal := platform
 				start := time.Now()
-				services, err = b.SystemServices.CollectSystemServices(ctx, platform.InitSystem)
-				if err != nil {
-					b.Log.WithError(err).Error("initsystem services")
+				s, se := b.SystemServices.CollectSystemServices(ctx, pLocal.InitSystem)
+				if se != nil {
+					b.Log.WithError(se).Error("initsystem services")
 				}
+				mu.Lock()
+				services = s
+				mu.Unlock()
 				defer func(n string) { b.Log.WithField("collector", n).WithField("dur", time.Since(start)).Info("done") }("initsystem services")
 
 			}
@@ -133,10 +141,13 @@ func (b *Builder) Build(ctx context.Context) (*schema.HostInventory, error) {
 	g.Go(func() error {
 		if b.Cfg.Facter.Inventory.Packages.Enabled {
 			start := time.Now()
-			pkgs, err = b.Packages.CollectPackages(ctx)
-			if err != nil {
-				b.Log.WithError(err).Error("packages")
+			pk, pkerr := b.Packages.CollectPackages(ctx)
+			if pkerr != nil {
+				b.Log.WithError(pkerr).Error("packages")
 			}
+			mu.Lock()
+			pkgs = pk
+			mu.Unlock()
 			defer func(n string) { b.Log.WithField("collector", n).WithField("dur", time.Since(start)).Info("done") }("packages")
 
 		}
@@ -147,10 +158,13 @@ func (b *Builder) Build(ctx context.Context) (*schema.HostInventory, error) {
 	g.Go(func() error {
 		if b.Cfg.Facter.Inventory.Applications.Enabled {
 			start := time.Now()
-			apps, err = b.Applications.CollectApplications(ctx)
-			if err != nil {
-				b.Log.WithError(err).Error("applications")
+			a, apperr := b.Applications.CollectApplications(ctx)
+			if apperr != nil {
+				b.Log.WithError(apperr).Error("applications")
 			}
+			mu.Lock()
+			apps = a
+			mu.Unlock()
 			defer func(n string) { b.Log.WithField("collector", n).WithField("dur", time.Since(start)).Info("done") }("applications")
 		}
 		return nil
@@ -174,10 +188,13 @@ func (b *Builder) Build(ctx context.Context) (*schema.HostInventory, error) {
 	g.Go(func() error {
 		if b.Cfg.Facter.Inventory.Networks.Enabled {
 			start := time.Now()
-			networks, err = b.Networks.CollectNetworks(ctx)
-			if err != nil {
-				b.Log.WithError(err).Error("networks")
+			net, neterr := b.Networks.CollectNetworks(ctx)
+			if neterr != nil {
+				b.Log.WithError(neterr).Error("networks")
 			}
+			mu.Lock()
+			networks = net
+			mu.Unlock()
 			defer func(n string) { b.Log.WithField("collector", n).WithField("dur", time.Since(start)).Info("done") }("networks")
 
 		}
@@ -188,17 +205,25 @@ func (b *Builder) Build(ctx context.Context) (*schema.HostInventory, error) {
 	g.Go(func() error {
 		if b.Cfg.Facter.Inventory.User.Enabled {
 			start := time.Now()
-			users, err := b.Users.CollectUsers(ctx)
-			if err != nil {
-				b.Log.WithError(err).Error("users")
+			u, uerr := b.Users.CollectUsers(ctx)
+			if uerr != nil {
+				b.Log.WithError(uerr).Error("users")
 			}
+			mu.Lock()
+			users = u
+			mu.Unlock()
 			// SSH
 			if b.Cfg.Facter.Inventory.SSH.Enabled {
 				b.SSHInfos = ssh.New(b.Log, &b.Cfg.Facter.Inventory.SSH)
-				sshKeyAccess, knownHosts, sshKeyInfos, err = b.SSHInfos.CollectSSHInfos(ctx, users)
-				if err != nil {
-					b.Log.WithError(err).Error("ssh")
+				ska, kh, ski, ssherr := b.SSHInfos.CollectSSHInfos(ctx, users)
+				if ssherr != nil {
+					b.Log.WithError(ssherr).Error("ssh")
 				}
+				mu.Lock()
+				sshKeyAccess = ska
+				knownHosts = kh
+				sshKeyInfos = ski
+				mu.Unlock()
 			}
 			defer func(n string) { b.Log.WithField("collector", n).WithField("dur", time.Since(start)).Info("done") }("users and ssh")
 
@@ -210,10 +235,13 @@ func (b *Builder) Build(ctx context.Context) (*schema.HostInventory, error) {
 	g.Go(func() error {
 		if b.Cfg.Facter.Inventory.Process.Enabled {
 			start := time.Now()
-			processes, err = b.Processes.CollectProcess(ctx)
-			if err != nil {
-				b.Log.WithError(err).Error("processes")
+			proc, procerr := b.Processes.CollectProcess(ctx)
+			if procerr != nil {
+				b.Log.WithError(procerr).Error("processes")
 			}
+			mu.Lock()
+			processes = proc
+			mu.Unlock()
 			defer func(n string) { b.Log.WithField("collector", n).WithField("dur", time.Since(start)).Info("done") }("processes")
 
 		}

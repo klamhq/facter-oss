@@ -22,8 +22,6 @@ func New(log *logrus.Logger, cfg *options.SystemdServiceOptions) *SystemServices
 	}
 }
 
-func (c *SystemServicesCollectorImpl) Name() string { return "initsystem" }
-
 func (c *SystemServicesCollectorImpl) CollectSystemServices(ctx context.Context, initsystem string) ([]*schema.SystemdService, error) {
 	c.log.Info("Crafting initsystem services")
 	systemServices := []*schema.SystemdService{}
