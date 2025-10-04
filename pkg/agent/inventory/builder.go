@@ -2,6 +2,7 @@ package inventory
 
 import (
 	"context"
+	"fmt"
 	"os/user"
 	"runtime"
 	"sync"
@@ -43,10 +44,22 @@ type Builder struct {
 	SSHInfos       ssh.SSHInfosCollector
 }
 
-func NewBuilder(cfg options.RunOptions, systemGather *models.System, logger *logrus.Logger) *Builder {
+func newInventoryStore(cfg options.RunOptions) (store.InventoryStore, error) {
+	s, err := store.NewBoltInventoryStore(cfg.Facter.Store.Path)
+	if err != nil {
+		return nil, fmt.Errorf("unable to create inventory boltdb store: %w", err)
+	}
+	return s, nil
+}
+
+func NewBuilder(cfg options.RunOptions, systemGather *models.System, logger *logrus.Logger) (*Builder, error) {
 	// If users collection is disabled, disable SSH collection too
 	if !cfg.Facter.Inventory.User.Enabled {
 		cfg.Facter.Inventory.SSH.Enabled = false
+	}
+	s, err := newInventoryStore(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("initializing inventory store: %w", err)
 	}
 	b := &Builder{
 		Log:          logger,
@@ -54,13 +67,7 @@ func NewBuilder(cfg options.RunOptions, systemGather *models.System, logger *log
 		SystemGather: systemGather,
 		maxParallel:  runtime.NumCPU(),
 		Now:          time.Now,
-		Store: func() store.InventoryStore {
-			s, err := store.NewBoltInventoryStore(cfg.Facter.Store.Path)
-			if err != nil {
-				logrus.WithError(err).Fatal("Unable to create inventory boltdb store")
-			}
-			return s
-		}(),
+		Store:        s,
 		// Default collectors set to nil, will be initialized later if enabled in the config
 		Platform: nil,
 		WhoAmI: func() (string, error) {
@@ -72,7 +79,7 @@ func NewBuilder(cfg options.RunOptions, systemGather *models.System, logger *log
 		},
 	}
 
-	return b
+	return b, nil
 }
 
 func (b *Builder) Build(ctx context.Context) (*schema.HostInventory, error) {
