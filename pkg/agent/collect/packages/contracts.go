@@ -7,6 +7,5 @@ import (
 )
 
 type PackagesCollector interface {
-	Name() string
 	CollectPackages(ctx context.Context) ([]*schema.Package, error)
 }

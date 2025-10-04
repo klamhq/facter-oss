@@ -27,9 +27,6 @@ func New(log *logrus.Logger, cfg *options.NetworksOptions) *NetworksCollectorImp
 		cfg: cfg,
 	}
 }
-
-func (c *NetworksCollectorImpl) Name() string { return "networks" }
-
 func (c *NetworksCollectorImpl) CollectNetworks(ctx context.Context) (*schema.Network, error) {
 	c.log.Info("Crafting networks")
 	networks := &schema.Network{}
@@ -40,37 +37,40 @@ func (c *NetworksCollectorImpl) CollectNetworks(ctx context.Context) (*schema.Ne
 		SearchDomains: strings.Join(getDnsInfo.Search, ","),
 		Port:          getDnsInfo.Port,
 	}
-
-	getExternalIp, err := external.GetIpInfo(c.cfg.PublicIp.PublicIpApiUrl, c.cfg.PublicIp.Timeout)
-
-	if err != nil {
-		c.log.Error("failed to get external ip addr: ", err)
-	}
-
-	if getExternalIp != nil {
-		externalIp := &schema.ExternalIp{
-			Ip:        getExternalIp.Ip,
-			Forwarded: getExternalIp.Forwarded,
-		}
-		networks.ExternalIp = externalIp
-	}
-
-	if c.cfg.GeoIp.Enabled {
-		// Get geoIp information
-		getGeoIpInfo, err := external.GetGeoIpLocalisation(c.cfg.GeoIp.GoogleGeoApikey, c.cfg.GeoIp.GoogleGeoUrl, c.cfg.GeoIp.Timeout)
+	if c.cfg.PublicIp.Enabled {
+		getExternalIp, err := external.GetIpInfo(c.cfg.PublicIp.PublicIpApiUrl, c.cfg.PublicIp.Timeout)
 		if err != nil {
-			c.log.Error("failed to get geoIp localisation information: ", err)
+			c.log.Error("failed to get external ip addr: ", err)
 		}
-		networks.GeoipInfo = &schema.GeoIpInfo{
-			Longitude: getGeoIpInfo.GeoIpInfoLocationLatitude,
-			Latitude:  getGeoIpInfo.GeoIpInfoLocationLongitude,
-			Accuracy:  getGeoIpInfo.GeoIpInfoAccuracy,
+
+		if getExternalIp != nil {
+			externalIp := &schema.ExternalIp{
+				Ip:        getExternalIp.Ip,
+				Forwarded: getExternalIp.Forwarded,
+			}
+			networks.ExternalIp = externalIp
 		}
-	} else {
-		networks.GeoipInfo = &schema.GeoIpInfo{
-			Longitude: 0,
-			Latitude:  0,
-			Accuracy:  0,
+	}
+
+	networks.GeoipInfo = &schema.GeoIpInfo{
+		Longitude: 0,
+		Latitude:  0,
+		Accuracy:  0,
+	}
+	if c.cfg.GeoIp.Enabled {
+		if c.cfg.GeoIp.GoogleGeoApikey == "" && c.cfg.GeoIp.GoogleGeoUrl == "" {
+			c.log.Error("Google Api Key and Url not define")
+		} else {
+			// Get geoIp information
+			getGeoIpInfo, err := external.GetGeoIpLocalisation(c.cfg.GeoIp.GoogleGeoApikey, c.cfg.GeoIp.GoogleGeoUrl, c.cfg.GeoIp.Timeout)
+			if err != nil {
+				c.log.Error("failed to get geoIp localisation information: ", err)
+			}
+			networks.GeoipInfo = &schema.GeoIpInfo{
+				Longitude: getGeoIpInfo.GeoIpInfoLocationLatitude,
+				Latitude:  getGeoIpInfo.GeoIpInfoLocationLongitude,
+				Accuracy:  getGeoIpInfo.GeoIpInfoAccuracy,
+			}
 		}
 	}
 
