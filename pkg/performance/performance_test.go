@@ -26,13 +26,11 @@ func (h *testHook) Fire(entry *logrus.Entry) error {
 }
 
 func TestProfiling(t *testing.T) {
-	// Création d'un logger mock
 	logger := logrus.New()
 	hook := &testHook{}
 	logger.AddHook(hook)
-	logger.SetOutput(&bytes.Buffer{}) // éviter d'écrire sur stdout
+	logger.SetOutput(&bytes.Buffer{})
 
-	// Rediriger os.Create vers des fichiers temporaires pour ne pas polluer le disque
 	tmpCPUFile, err := os.CreateTemp("", "cpu-perf-*")
 	if err != nil {
 		t.Fatalf("unable to create temp CPU file: %v", err)
@@ -47,7 +45,6 @@ func TestProfiling(t *testing.T) {
 	defer os.Remove(tmpMemFile.Name())
 	defer tmpMemFile.Close()
 
-	// Patch os.Create temporairement
 	origCreate := performanceOsCreate
 	performanceOsCreate = func(name string) (*os.File, error) {
 		if name == "cpu-perf" {
@@ -60,10 +57,8 @@ func TestProfiling(t *testing.T) {
 	}
 	defer func() { performanceOsCreate = origCreate }()
 
-	// Appel de la fonction
 	Profiling(logger)
 
-	// Vérification qu’aucun Fatal n’a été appelé
 	if hook.fatalCalled {
 		t.Fatalf("logger.Fatal a été appelé: %s", hook.msg)
 	}
