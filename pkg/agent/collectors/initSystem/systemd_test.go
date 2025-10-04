@@ -54,6 +54,6 @@ func TestGetServiceDetails(t *testing.T) {
 	} else {
 		s, err := getServiceDetails("nginx")
 		assert.NoError(t, err)
-		assert.Nil(t, s)
+		assert.NotNil(t, s)
 	}
 }
