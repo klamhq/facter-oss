@@ -8,6 +8,5 @@ import (
 )
 
 type PlatformCollector interface {
-	Name() string
 	CollectPlatform(ctx context.Context) (*schema.Platform, error)
 }

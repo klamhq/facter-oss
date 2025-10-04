@@ -28,7 +28,8 @@ func TestNewBuilder_DisablesSSHWhenUserDisabled(t *testing.T) {
 	system := &models.System{}
 	logger := logrus.New()
 
-	b := NewBuilder(cfg, system, logger)
+	b, err := NewBuilder(cfg, system, logger)
+	assert.NoError(t, err)
 	assert.False(t, b.Cfg.Facter.Inventory.SSH.Enabled, "SSH should be disabled when User collector is disabled")
 	b.Store.Close()
 }
@@ -40,7 +41,8 @@ func TestNewBuilder_DefaultValues(t *testing.T) {
 	system.Host.Hostname = "test"
 	logger := logrus.New()
 
-	b := NewBuilder(cfg, system, logger)
+	b, err := NewBuilder(cfg, system, logger)
+	assert.NoError(t, err)
 	assert.NotNil(t, b.Log)
 	assert.Equal(t, cfg, b.Cfg)
 	assert.Equal(t, system, b.SystemGather)
@@ -59,7 +61,8 @@ func TestBuilder_Build_MetadataAndHostname(t *testing.T) {
 	system.Host.Hostname = "myhost"
 	logger := logrus.New()
 
-	b := NewBuilder(cfg, system, logger)
+	b, err := NewBuilder(cfg, system, logger)
+	assert.NoError(t, err)
 	inv, err := b.Build(context.Background())
 	assert.NoError(t, err)
 	assert.Equal(t, "myhost", inv.Hostname)
@@ -76,7 +79,8 @@ func TestBuilder_ManageDelta_FullSentWhenNoPrevious(t *testing.T) {
 	system := &models.System{}
 	system.Host.Hostname = "host1"
 	logger := logrus.New()
-	b := NewBuilder(cfg, system, logger)
+	b, err := NewBuilder(cfg, system, logger)
+	assert.NoError(t, err)
 
 	fullInv := &schema.HostInventory{Hostname: "host1"}
 	req, returned := b.ManageDelta(fullInv)
@@ -94,13 +98,14 @@ func TestBuilder_ManageDelta_DeltaSentWhenChanged(t *testing.T) {
 	system := &models.System{}
 	system.Host.Hostname = "host2"
 	logger := logrus.New()
-	b := NewBuilder(cfg, system, logger)
+	b, err := NewBuilder(cfg, system, logger)
+	assert.NoError(t, err)
 
 	// Inventaire initial
 	pkg := []*schema.Package{{Name: "pkg1", Version: "1.0.0"}}
 	fullInv := &schema.HostInventory{Hostname: "host2"}
 	fullInv.Packages = pkg
-	err := b.Store.Save("host2", fullInv)
+	err = b.Store.Save("host2", fullInv)
 	assert.NoError(t, err)
 
 	// Inventaire modifié
@@ -123,14 +128,15 @@ func TestBuilder_ManageDelta_NoDeltaSentWhenNoChange(t *testing.T) {
 	system := &models.System{}
 	system.Host.Hostname = "host3"
 	logger := logrus.New()
-	b := NewBuilder(cfg, system, logger)
+	b, err := NewBuilder(cfg, system, logger)
+	assert.NoError(t, err)
 
 	pkg := []*schema.Package{{Name: "pkg1", Version: "1.0.0"}}
 	fullInv := &schema.HostInventory{Hostname: "host3"}
 	fullInv.Packages = pkg
 
 	// Enregistre l'inventaire initial dans le store
-	err := b.Store.Save("host3", fullInv)
+	err = b.Store.Save("host3", fullInv)
 	assert.NoError(t, err)
 
 	// Appelle ManageDelta avec le même inventaire
@@ -158,7 +164,8 @@ func TestBuilder_CollectAll(t *testing.T) {
 	system := &models.System{}
 	system.Host.Hostname = "host4"
 	logger := logrus.New()
-	b := NewBuilder(cfg, system, logger)
+	b, err := NewBuilder(cfg, system, logger)
+	assert.NoError(t, err)
 	b.Packages = packages.New(logger, &cfg.Facter.Inventory.Packages)
 	b.Networks = networks.New(logger, &cfg.Facter.Inventory.Networks)
 	b.Users = users.New(logger, &cfg.Facter.Inventory.User)

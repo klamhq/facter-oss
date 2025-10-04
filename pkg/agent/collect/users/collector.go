@@ -22,8 +22,6 @@ func New(log *logrus.Logger, cfg *options.UserOptions) *UserCollectorImpl {
 	}
 }
 
-func (c *UserCollectorImpl) Name() string { return "users" }
-
 func (c *UserCollectorImpl) CollectUsers(ctx context.Context) ([]*schema.User, error) {
 	c.log.Info("Crafting users")
 	var collectedUsers []*schema.User

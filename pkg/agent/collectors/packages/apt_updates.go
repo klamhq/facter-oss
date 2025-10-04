@@ -2,28 +2,19 @@ package packages
 
 import (
 	"context"
-	"os"
-	"os/exec"
 	"regexp"
 	"strings"
+
+	"github.com/klamhq/facter-oss/pkg/utils"
 )
 
-// Map: packageName -> upgradable version
-func GetAptUpgradableMap(ctx context.Context) (map[string]string, error) {
-	cmd := exec.CommandContext(ctx, "apt", "list", "--upgradable")
-	cmd.Env = os.Environ()
-	cmd.Env = append(cmd.Env, "LANG=C")
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		return nil, err
-	}
+var aptLineRE = regexp.MustCompile(`^(?P<name>[^\s]+)/[^\s]+\s+(?:(?:\d+:)?)(?P<version>[^\s]+)\s+[^\s]+\s+\[upgradable from: (?:(?:\d+:)?)(?P<from_version>[^\]]+)\]$`)
 
-	re := regexp.MustCompile(`^(?P<name>[^\s]+)/[^\s]+\s+(?:(?:\d+:)?)(?P<version>[^\s]+)\s+[^\s]+\s+\[upgradable from: (?:(?:\d+:)?)(?P<from_version>[^\]]+)\]$`)
+func parseAptUpgradableOutput(output []byte) map[string]string {
 	lines := strings.Split(string(output), "\n")
-
 	result := map[string]string{}
 	for _, line := range lines {
-		match := re.FindStringSubmatch(line)
+		match := aptLineRE.FindStringSubmatch(line)
 		if match == nil {
 			continue
 		}
@@ -31,6 +22,13 @@ func GetAptUpgradableMap(ctx context.Context) (map[string]string, error) {
 		version := match[2]
 		result[name] = version
 	}
+	return result
+}
 
-	return result, nil
+func GetAptUpgradableMap(ctx context.Context) (map[string]string, error) {
+	output, err := utils.RunCmd(ctx, "apt", "list", "--upgradable")
+	if err != nil {
+		return nil, err
+	}
+	return parseAptUpgradableOutput(output), nil
 }

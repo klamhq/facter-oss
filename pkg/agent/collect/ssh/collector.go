@@ -22,8 +22,6 @@ func New(log *logrus.Logger, cfg *options.SSHOptions) *SSHInfosCollectorImpl {
 	}
 }
 
-func (c *SSHInfosCollectorImpl) Name() string { return "ssh" }
-
 func (c *SSHInfosCollectorImpl) CollectSSHInfos(ctx context.Context, users []*schema.User) ([]*schema.SshKeyAccess, []*schema.KnownHost, []*schema.SshKeyInfo, error) {
 	c.log.Info("Crafting sshkeys and known hosts")
 	var homeDirList []string
