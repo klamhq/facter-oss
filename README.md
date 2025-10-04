@@ -1,5 +1,5 @@
 # facter
-![Coverage](https://img.shields.io/badge/Coverage-62.2%25-yellow)
+![Coverage](https://img.shields.io/badge/Coverage-62.7%25-yellow)
 
 ## Presentation
 
