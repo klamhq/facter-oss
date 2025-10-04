@@ -39,8 +39,10 @@ func TestGetDnsConf_DefaultPath(t *testing.T) {
 	tmpFile := writeTempResolvConf(t, "nameserver 8.8.8.8\n")
 	// Move the temp file to /etc/resolv.conf if running as root, else skip
 	if utils.IsRoot() {
-		defer os.WriteFile(origPath, origContent, 0644)
-		os.Rename(tmpFile, origPath)
+		err := os.WriteFile(origPath, origContent, 0644)
+		assert.NoError(t, err)
+		err = os.Rename(tmpFile, origPath)
+		assert.NoError(t, err)
 		conf := GetDnsConf()
 		assert.NotNil(t, conf)
 		assert.True(t,

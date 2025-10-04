@@ -282,9 +282,12 @@ func TestGetSshFiles_MatchPubFiles(t *testing.T) {
 	pubFile := filepath.Join(dir, "id_rsa.pub")
 	privFile := filepath.Join(dir, "id_rsa")
 	txtFile := filepath.Join(dir, "notes.txt")
-	os.WriteFile(pubFile, []byte("pubkey"), 0644)
-	os.WriteFile(privFile, []byte("privkey"), 0600)
-	os.WriteFile(txtFile, []byte("text"), 0644)
+	err := os.WriteFile(pubFile, []byte("pubkey"), 0644)
+	assert.NoError(t, err)
+	err = os.WriteFile(privFile, []byte("privkey"), 0600)
+	assert.NoError(t, err)
+	err = os.WriteFile(txtFile, []byte("text"), 0644)
+	assert.NoError(t, err)
 
 	// Match only .pub files
 	matchFunc := func(name string) bool {
@@ -301,8 +304,10 @@ func TestGetSshFiles_MatchAllFiles(t *testing.T) {
 	dir := t.TempDir()
 	file1 := filepath.Join(dir, "file1")
 	file2 := filepath.Join(dir, "file2")
-	os.WriteFile(file1, []byte("data1"), 0644)
-	os.WriteFile(file2, []byte("data2"), 0644)
+	err := os.WriteFile(file1, []byte("data1"), 0644)
+	assert.NoError(t, err)
+	err = os.WriteFile(file2, []byte("data2"), 0644)
+	assert.NoError(t, err)
 
 	matchFunc := func(name string) bool { return true }
 
@@ -316,7 +321,8 @@ func TestGetSshFiles_MatchAllFiles(t *testing.T) {
 func TestGetSshFiles_NoMatch(t *testing.T) {
 	dir := t.TempDir()
 	file := filepath.Join(dir, "id_rsa.pub")
-	os.WriteFile(file, []byte("pubkey"), 0644)
+	err := os.WriteFile(file, []byte("pubkey"), 0644)
+	assert.NoError(t, err)
 
 	matchFunc := func(name string) bool { return false }
 
@@ -328,9 +334,11 @@ func TestGetSshFiles_NoMatch(t *testing.T) {
 func TestGetSshFiles_SkipsNonRegularFiles(t *testing.T) {
 	dir := t.TempDir()
 	subDir := filepath.Join(dir, "subdir")
-	os.Mkdir(subDir, 0755)
+	err := os.Mkdir(subDir, 0744)
+	assert.NoError(t, err)
 	file := filepath.Join(dir, "id_rsa.pub")
-	os.WriteFile(file, []byte("pubkey"), 0644)
+	err = os.WriteFile(file, []byte("pubkey"), 0644)
+	assert.NoError(t, err)
 
 	matchFunc := func(name string) bool { return true }
 
@@ -373,10 +381,11 @@ func TestGetAllSshFiles_DirDoesNotExist(t *testing.T) {
 func TestGetAllSshFiles(t *testing.T) {
 	dir := t.TempDir()
 	dirSsh := dir + "/.ssh"
-	os.Mkdir(dirSsh, 0744)
+	err := os.Mkdir(dirSsh, 0744)
+	assert.NoError(t, err)
 	pubFile1 := filepath.Join(dirSsh, "id_rsa.pub")
 	content1 := "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCQh08WbnI8YIATA/frSJGvW2oUjvZ387QDwH5OPfw8gN+SGpcWYdXBMVljVh72zPjiEBkeU9MXcEccKMGQXCE6AG5xsxA9saXJ3JIB/Ydo1wgabWXw3/HbwE41PWNu0l4xcM3d2IJRMxqk1HB5ipwvWkbZ9Xs3XqngYIblHKkdkCAq4cZ6EAWA2LgvNcUZh31IN0m3d6ZcOF4Xgg/qCIEoiPXM2GDRttASXjLNpEiB1sF/lbKCEyzmrejNUMEOiw/Hlwid+y5Vmmefn7sKVoCZ42ZdDuynzFWR+fs4ISjMoJvPKrtFoea+JMdO9hNp4QUuwbYDh8CJNTq1pV/8UTJOFk4FShrncYnWlgeRmKp+P39QE/JFJMwxErkGT/mTH38l9QYIgeflNpsOTcM3fpprSxU/sVIxb3IFssQQwNQQ9Bp+1eo2nwrjxuY1EyZiqfUsAo+OdRpcQwV+2LyNneNlp7Az3n5/xuYgwTwKUslPdhlA4h/mjfdF9EAIl20CwZM= user@host"
-	err := os.WriteFile(pubFile1, []byte(content1), 0644)
+	err = os.WriteFile(pubFile1, []byte(content1), 0644)
 	assert.NoError(t, err)
 
 	knownHostsFile := filepath.Join(dirSsh, "known_hosts")
@@ -408,10 +417,11 @@ func TestParseAuthFiles_DoesNotExist(t *testing.T) {
 func TestParseAuthFiles(t *testing.T) {
 	dir := t.TempDir()
 	dirSsh := dir + "/.ssh"
-	os.Mkdir(dirSsh, 0744)
+	err := os.Mkdir(dirSsh, 0744)
+	assert.NoError(t, err)
 	pubFile1 := filepath.Join(dirSsh, "authorized_keys")
 	content1 := "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCQh08WbnI8YIATA/frSJGvW2oUjvZ387QDwH5OPfw8gN+SGpcWYdXBMVljVh72zPjiEBkeU9MXcEccKMGQXCE6AG5xsxA9saXJ3JIB/Ydo1wgabWXw3/HbwE41PWNu0l4xcM3d2IJRMxqk1HB5ipwvWkbZ9Xs3XqngYIblHKkdkCAq4cZ6EAWA2LgvNcUZh31IN0m3d6ZcOF4Xgg/qCIEoiPXM2GDRttASXjLNpEiB1sF/lbKCEyzmrejNUMEOiw/Hlwid+y5Vmmefn7sKVoCZ42ZdDuynzFWR+fs4ISjMoJvPKrtFoea+JMdO9hNp4QUuwbYDh8CJNTq1pV/8UTJOFk4FShrncYnWlgeRmKp+P39QE/JFJMwxErkGT/mTH38l9QYIgeflNpsOTcM3fpprSxU/sVIxb3IFssQQwNQQ9Bp+1eo2nwrjxuY1EyZiqfUsAo+OdRpcQwV+2LyNneNlp7Az3n5/xuYgwTwKUslPdhlA4h/mjfdF9EAIl20CwZM= user@host"
-	err := os.WriteFile(pubFile1, []byte(content1), 0644)
+	err = os.WriteFile(pubFile1, []byte(content1), 0644)
 	assert.NoError(t, err)
 	logger := logrus.New()
 	var authFile []string

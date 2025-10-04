@@ -1,8 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-
 	"github.com/klamhq/facter-oss/pkg/agent"
 	"github.com/klamhq/facter-oss/pkg/options"
 	"github.com/sirupsen/logrus"
@@ -52,7 +50,7 @@ func initConfig() {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			logrus.Fatal("No config file found")
 		} else {
-			fmt.Println("Using config file:", viper.ConfigFileUsed())
+			logrus.Info("Using config file:", viper.ConfigFileUsed())
 		}
 
 	}

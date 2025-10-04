@@ -25,11 +25,12 @@ func TestCollectSSH(t *testing.T) {
 	ctx := context.Background()
 	dir := t.TempDir()
 	dirSsh := dir + "/.ssh"
-	os.Mkdir(dirSsh, 0744)
+	err := os.Mkdir(dirSsh, 0744)
+	assert.NoError(t, err)
 	// Create a known_hosts file with a valid entry
 	knownHostsFile := filepath.Join(dirSsh, "known_hosts")
 	knownHostsContent := "host.example.com " + mockKeyRSA
-	err := os.WriteFile(knownHostsFile, []byte(knownHostsContent), 0644)
+	err = os.WriteFile(knownHostsFile, []byte(knownHostsContent), 0644)
 	assert.NoError(t, err)
 
 	pubFile := filepath.Join(dirSsh, "id_rsa.pub")

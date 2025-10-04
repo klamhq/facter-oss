@@ -113,7 +113,7 @@ func (c *PlatformCollectorImpl) fillHardware(p *schema.Platform) {
 	}
 
 	// Disks
-	var out []*schema.Disk
+	out := make([]*schema.Disk, 0, len(disks))
 	for _, d := range disks {
 		var parts []*schema.DiskPartition
 		for _, p := range d.Partitions {

@@ -50,7 +50,8 @@ func TestNewBuilder_DefaultValues(t *testing.T) {
 	assert.NotNil(t, b.WhoAmI)
 	assert.NotNil(t, b.Store)
 	assert.Nil(t, b.Platform)
-	b.Store.Delete("test")
+	err = b.Store.Delete("test")
+	assert.NoError(t, err)
 	b.Store.Close()
 }
 
@@ -69,7 +70,8 @@ func TestBuilder_Build_MetadataAndHostname(t *testing.T) {
 	assert.NotNil(t, inv.Metadata)
 	assert.Equal(t, "0.1.0", inv.Metadata.FacterVersion)
 	assert.NotEmpty(t, inv.Metadata.RunningDate)
-	b.Store.Delete("myhost")
+	err = b.Store.Delete("myhost")
+	assert.NoError(t, err)
 	b.Store.Close()
 }
 
@@ -87,7 +89,8 @@ func TestBuilder_ManageDelta_FullSentWhenNoPrevious(t *testing.T) {
 	assert.NotNil(t, req)
 	assert.Equal(t, fullInv, returned)
 	assert.NotNil(t, req.GetFull())
-	b.Store.Delete("host1")
+	err = b.Store.Delete("host1")
+	assert.NoError(t, err)
 	b.Store.Close()
 
 }
@@ -118,7 +121,8 @@ func TestBuilder_ManageDelta_DeltaSentWhenChanged(t *testing.T) {
 	assert.Equal(t, fullInvA, returned)
 	assert.NotNil(t, req.GetDelta())
 
-	b.Store.Delete("host2")
+	err = b.Store.Delete("host2")
+	assert.NoError(t, err)
 	b.Store.Close()
 }
 
@@ -144,7 +148,8 @@ func TestBuilder_ManageDelta_NoDeltaSentWhenNoChange(t *testing.T) {
 	assert.Nil(t, req)
 	assert.Nil(t, returned)
 
-	b.Store.Delete("host3")
+	err = b.Store.Delete("host3")
+	assert.NoError(t, err)
 	b.Store.Close()
 }
 

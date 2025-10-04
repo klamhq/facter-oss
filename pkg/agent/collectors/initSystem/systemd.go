@@ -18,7 +18,7 @@ func GatherSystemdInfo(logger *logrus.Logger) ([]models.SystemdService, error) {
 		logger.WithError(err).Error("Failed to list systemd services")
 		return nil, err
 	}
-	var systemdServiceInfo []models.SystemdService
+	systemdServiceInfo := make([]models.SystemdService, 0, len(services))
 	for _, service := range services {
 		details, err := getServiceDetails(service)
 		if err != nil {

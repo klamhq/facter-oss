@@ -11,7 +11,7 @@ import (
 // It returns a slice of NetworkInterface structs or an error if the retrieval fails.
 func GetNetworkInterfaces() ([]models.NetworkInterface, error) {
 	iFaces, err := net.Interfaces()
-	var result []models.NetworkInterface
+	result := make([]models.NetworkInterface, 0, len(iFaces))
 	if err != nil {
 		return result, err
 	}

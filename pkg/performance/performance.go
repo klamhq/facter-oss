@@ -1,7 +1,6 @@
 package performance
 
 import (
-	"fmt"
 	"os"
 	"runtime"
 	"runtime/pprof"
@@ -12,7 +11,7 @@ import (
 var performanceOsCreate = os.Create
 
 func Profiling(logger *logrus.Logger) {
-	fmt.Println("Run performance profiling")
+	logger.Info("Run performance profiling")
 	fCpu, err := os.Create("cpu-perf")
 	if err != nil {
 		logger.Fatal("could not create CPU profile: ", err)

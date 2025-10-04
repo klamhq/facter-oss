@@ -24,18 +24,19 @@ func New(log *logrus.Logger, cfg *options.UserOptions) *UserCollectorImpl {
 
 func (c *UserCollectorImpl) CollectUsers(ctx context.Context) ([]*schema.User, error) {
 	c.log.Info("Crafting users")
-	var collectedUsers []*schema.User
+
 	getConnectedUsers := users.GetConnectedUsers(c.log)
 
 	getUsers, err := users.GetSystemUsers(c.cfg.PasswdFile, c.log)
 
-	Mergeusers := users.MergeUsersAndSessions(getUsers, getConnectedUsers)
+	mergeUsers := users.MergeUsersAndSessions(getUsers, getConnectedUsers)
 
+	collectedUsers := make([]*schema.User, 0, len(mergeUsers))
 	if err != nil {
 		return nil, err
 	}
 
-	for _, u := range Mergeusers {
+	for _, u := range mergeUsers {
 		var sessions []*schema.Session
 		for _, s := range u.Session {
 			sessions = append(sessions, &schema.Session{
