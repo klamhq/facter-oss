@@ -15,10 +15,6 @@ func TestGatherSystemdInfoFailDarwin(t *testing.T) {
 		assert.Error(t, err)
 		assert.Nil(t, s)
 	}
-	logger := logrus.New()
-	s, err := GatherSystemdInfo(logger)
-	assert.Error(t, err)
-	assert.Nil(t, s)
 }
 func TestGatherSystemdInfo(t *testing.T) {
 	if runtime.GOOS == "darwin" {
@@ -27,7 +23,7 @@ func TestGatherSystemdInfo(t *testing.T) {
 	logger := logrus.New()
 	s, err := GatherSystemdInfo(logger)
 	assert.NoError(t, err)
-	assert.Nil(t, s)
+	assert.NotNil(t, s)
 }
 
 func TestListAllServicesFail(t *testing.T) {
@@ -46,7 +42,7 @@ func TestListAllServices(t *testing.T) {
 	logger := logrus.New()
 	s, err := listAllServices(logger)
 	assert.NoError(t, err)
-	assert.Nil(t, s)
+	assert.NotNil(t, s)
 
 }
 
