@@ -7,6 +7,5 @@ import (
 )
 
 type ProcessCollector interface {
-	Name() string
 	CollectProcess(ctx context.Context) ([]*schema.Process, error)
 }
