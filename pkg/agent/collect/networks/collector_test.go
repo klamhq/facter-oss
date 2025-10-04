@@ -2,6 +2,7 @@ package networks
 
 import (
 	"context"
+	"runtime"
 	"testing"
 
 	"github.com/klamhq/facter-oss/pkg/options"
@@ -48,6 +49,9 @@ func TestCollectNetworksWithConnections(t *testing.T) {
 }
 
 func TestCraftFirewallFail(t *testing.T) {
+	if runtime.GOOS != "darwin" {
+		t.Skip()
+	}
 	cfg := options.RunOptions{}
 	cfg.Facter.Inventory.Networks.Connections.Enabled = true
 	c := New(logrus.New(), &cfg.Facter.Inventory.Networks)
