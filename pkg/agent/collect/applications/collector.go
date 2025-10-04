@@ -23,8 +23,6 @@ func New(log *logrus.Logger, cfg *options.ApplicationsOptions) *ApplicationsColl
 	}
 }
 
-func (c *ApplicationsCollectorImpl) Name() string { return "applications" }
-
 func (c *ApplicationsCollectorImpl) CollectApplications(ctx context.Context) ([]*schema.Application, error) {
 	c.log.Info("Crafting applications")
 
@@ -123,7 +121,6 @@ func (c *ApplicationsCollectorImpl) CollectApplications(ctx context.Context) ([]
 		})
 	}
 
-	// on ne pousse une Application que si Docker est actif
 	app := &schema.Application{Docker: docker}
 	return []*schema.Application{app}, nil
 }
