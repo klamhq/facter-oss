@@ -7,6 +7,5 @@ import (
 )
 
 type ApplicationsCollector interface {
-	Name() string
 	CollectApplications(ctx context.Context) ([]*schema.Application, error)
 }
