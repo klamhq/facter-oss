@@ -9,6 +9,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var performanceOsCreate = os.Create
+
 func Profiling(logger *logrus.Logger) {
 	fmt.Println("Run performance profiling")
 	fCpu, err := os.Create("cpu-perf")
@@ -20,7 +22,7 @@ func Profiling(logger *logrus.Logger) {
 	}
 	defer pprof.StopCPUProfile()
 
-	fMem, err := os.Create("mem-perf")
+	fMem, err := performanceOsCreate("mem-perf")
 	if err != nil {
 		logger.Fatal("could not create memory profile: ", err)
 	}
