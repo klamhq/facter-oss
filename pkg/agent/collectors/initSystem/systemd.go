@@ -11,6 +11,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var execCommand = exec.Command
+
 // GatherSystemdInfo gathers information about systemd services and their dependencies.
 func GatherSystemdInfo(logger *logrus.Logger) ([]models.SystemdService, error) {
 	services, err := listAllServices(logger)
@@ -33,7 +35,7 @@ func GatherSystemdInfo(logger *logrus.Logger) ([]models.SystemdService, error) {
 // listAllServices lists all systemd services on the system.
 // It returns a slice of service names or an error if the command fails.
 func listAllServices(logger *logrus.Logger) ([]string, error) {
-	cmd := exec.Command("systemctl", "list-units", "--type=service", "--no-pager", "--all", "--no-legend")
+	cmd := execCommand("systemctl", "list-units", "--type=service", "--no-pager", "--all", "--no-legend")
 	output, err := cmd.Output()
 	if err != nil {
 		logger.WithError(err).Error("Failed to execute systemctl command")
@@ -56,7 +58,7 @@ func listAllServices(logger *logrus.Logger) ([]string, error) {
 // getServiceDetails retrieves detailed information about a specific systemd service.
 // It returns a SystemdService struct or an error if the command fails.
 func getServiceDetails(name string) (*models.SystemdService, error) {
-	cmd := exec.Command("systemctl", "show", name)
+	cmd := execCommand("systemctl", "show", name)
 	output, err := cmd.Output()
 	if err != nil {
 		return nil, err
@@ -105,7 +107,7 @@ func getServiceDetails(name string) (*models.SystemdService, error) {
 	}
 
 	// Enabled ?
-	cmd = exec.Command("systemctl", "is-enabled", name)
+	cmd = execCommand("systemctl", "is-enabled", name)
 	if output, err := cmd.Output(); err == nil {
 		service.Enabled = strings.TrimSpace(string(output)) == "enabled"
 	}
