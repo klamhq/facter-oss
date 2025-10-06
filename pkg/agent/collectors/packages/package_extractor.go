@@ -14,9 +14,11 @@ import (
 // binPathPackageAssociation act as a cache.
 // Each time we want too fetch corresponding package from a binary, it's took 200ms.
 // So this cache should speedup the process.
-// Exemple
+// Example
 // path(/usr/bin/apache) -> string(Apache)
 type binPathPackageAssociation map[string]string
+
+var execCommand = exec.Command
 
 type PackageExtractor struct {
 	Bin    string
@@ -99,7 +101,7 @@ func (p *PackageExtractor) GetPackage(exe string) string {
 	}
 
 	logPath := strings.Join([]string{p.Bin, p.Args, exe}, " ")
-	cmd := exec.Command(p.Bin, p.Args, exe)
+	cmd := execCommand(p.Bin, p.Args, exe)
 	cmd.Env = os.Environ()
 	cmd.Env = append(cmd.Env, "LANG=C")
 	var rawOutput []byte
