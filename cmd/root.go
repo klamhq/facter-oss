@@ -53,9 +53,11 @@ func initConfig() {
 	viper.AutomaticEnv()
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			logrus.Info("Using config file:", viper.ConfigFileUsed())
+			logrus.Fatal("No config file found, exit")
 		} else {
-			logrus.Fatal("No config file found:", err)
+			logrus.Fatalf("Error reading config file: %v", err)
 		}
+	} else {
+		logrus.Infof("Using config file: %s", viper.ConfigFileUsed())
 	}
 }
