@@ -24,21 +24,15 @@ func exportToFile(inventoryMsg *schema.InventoryRequest, logger *logrus.Logger, 
 		return err
 	}
 
-	if cfg.Facter.Sink.Enabled {
-		if cfg.Facter.Sink.Output.Type == "file" {
-			if cfg.Facter.Sink.Output.Format == "json" {
-				protobufJSON := protojson.Format(inventoryMsg)
-				bin = []byte(protobufJSON)
-			}
-			dest := path.Join(cfg.Facter.Sink.Output.OutputDirectory, cfg.Facter.Sink.Output.OutputFilename)
-			if err := os.WriteFile(dest, bin, 0644); err != nil {
-				logger.WithError(err).Error("Unable to write message")
-				return err
-			}
-			logger.Infof("File saved to %s", dest)
-			return nil
-		}
-
+	if cfg.Facter.Sink.Output.Format == "json" {
+		protobufJSON := protojson.Format(inventoryMsg)
+		bin = []byte(protobufJSON)
 	}
+	dest := path.Join(cfg.Facter.Sink.Output.OutputDirectory, cfg.Facter.Sink.Output.OutputFilename)
+	if err := os.WriteFile(dest, bin, 0644); err != nil {
+		logger.WithError(err).Error("Unable to write message")
+		return err
+	}
+	logger.Infof("File saved to %s", dest)
 	return nil
 }

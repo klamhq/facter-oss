@@ -1,7 +1,14 @@
 package main
 
-import "github.com/klamhq/facter-oss/cmd"
+import (
+	"os"
+
+	"github.com/klamhq/facter-oss/cmd"
+)
 
 func main() {
-	cmd.Execute()
+	err := cmd.Execute()
+	if err != nil {
+		os.Exit(1)
+	}
 }

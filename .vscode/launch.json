@@ -10,7 +10,7 @@
             "request": "launch",
             "mode": "debug",
             "program": "./main.go",
-            "args": "--config ../../configs/config-facter-only.yml",
+            "args": "--config ./configs/config-facter.yml",
         },
         {
             "name": "debug facter agent mac",
