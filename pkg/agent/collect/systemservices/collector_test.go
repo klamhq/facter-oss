@@ -2,6 +2,7 @@ package systemservices
 
 import (
 	"context"
+	"runtime"
 	"testing"
 
 	"github.com/klamhq/facter-oss/pkg/options"
@@ -22,4 +23,19 @@ func TestCollectSystemServicesBadSysInit(t *testing.T) {
 	res, err := s.CollectSystemServices(ctx, "fake")
 	assert.Empty(t, res)
 	assert.Nil(t, err)
+}
+
+func TestCollectSystemServicesSystemd(t *testing.T) {
+	cfg := options.RunOptions{}
+	s := New(logrus.New(), &cfg.Facter.Inventory.SystemdService)
+	ctx := context.Background()
+	res, err := s.CollectSystemServices(ctx, "systemd")
+	if runtime.GOOS == "darwin" {
+		assert.Nil(t, res)
+		assert.Error(t, err)
+	} else {
+		assert.NotEmpty(t, res)
+		assert.NoError(t, err)
+	}
+
 }
