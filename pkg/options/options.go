@@ -3,12 +3,14 @@ package options
 // RunOptions run a facter client
 type RunOptions struct {
 	Facter struct {
-		Enabled              bool               `yaml:"enabled"`
-		Inventory            Inventory          `yaml:"inventory"`
-		Store                StoreOptions       `yaml:"store"`
-		Logs                 LogsOptions        `yaml:"logs"`
-		Sink                 SinkOptions        `yaml:"sink"`
-		PerformanceProfiling PerformanceOptions `yaml:"performanceProfiling"`
+		Enabled              bool                   `yaml:"enabled"`
+		Inventory            Inventory              `yaml:"inventory"`
+		Store                StoreOptions           `yaml:"store"`
+		Logs                 LogsOptions            `yaml:"logs"`
+		Sink                 SinkOptions            `yaml:"sink"`
+		PerformanceProfiling PerformanceOptions     `yaml:"performanceProfiling"`
+		Compliance           ComplianceOptions      `yaml:"compliance"`
+		Vulnerabilities      VulnerabilitiesOptions `yaml:"vulnerabilities"`
 	} `yaml:"facter"`
 }
 
@@ -112,16 +114,26 @@ type PerformanceOptions struct {
 
 // SinkOptions contains the options for output sink
 type SinkOptions struct {
-	Enabled bool          `yaml:"enabled"`
-	Output  OutputOptions `yaml:"output"`
+	Output OutputOptions `yaml:"output"`
 }
 
 // OutputOptions contains the options for output export to file
 type OutputOptions struct {
-	Format          string `yaml:"format"`
-	Type            string `yaml:"type"`
-	OutputFilename  string `yaml:"outputFilename"`
-	OutputDirectory string `yaml:"outputDirectory"`
+	FacterServer    FacterServerOptions `yaml:"facterServer"`
+	Format          string              `yaml:"format"`
+	Type            string              `yaml:"type"`
+	OutputFilename  string              `yaml:"outputFilename"`
+	OutputDirectory string              `yaml:"outputDirectory"`
+}
+
+// FacterServerOptions contains the options for facterServer data upload from client
+type FacterServerOptions struct {
+	ServerHost         string `yaml:"serverHost"`
+	ServerPort         string `yaml:"serverPort"`
+	CertificatePath    string `yaml:"certificatePath"`
+	CertificateKeyPath string `yaml:"certificateKeyPath"`
+	CaPath             string `yaml:"caPath"`
+	SSLHostname        string `yaml:"sslHostname"`
 }
 
 // PackagesOptions contains the options for fetch installed package
@@ -165,30 +177,14 @@ type PortsOptions struct {
 	Enabled bool `yaml:"enabled"`
 }
 
-// DefaultNewRunOptions creates a new RunOptions with default parameters
-func DefaultNewRunOptions() {
-	d := &RunOptions{}
-	d.Facter.Enabled = true
-	d.Facter.Logs.DebugMode = false
-	d.Facter.Inventory.Packages.Enabled = true
-	d.Facter.Inventory.Networks.GeoIp.Enabled = true
-	d.Facter.Inventory.Networks.GeoIp.Timeout = 10
-	d.Facter.Inventory.Networks.GeoIp.GoogleGeoUrl = "https://www.googleapis.com/geolocation/v1/geolocate"
-	d.Facter.Inventory.SSH.Enabled = true
-	d.Facter.Inventory.User.Enabled = true
-	d.Facter.Inventory.User.PasswdFile = "/etc/passwd"
-	d.Facter.Inventory.Networks.Ports.Enabled = true
-	d.Facter.Inventory.Networks.PublicIp.Enabled = true
-	d.Facter.Inventory.Networks.PublicIp.PublicIpApiUrl = "https://ifconfig.me/"
-	d.Facter.Inventory.Networks.Firewall.Enabled = true
-	d.Facter.Inventory.Platform.Enabled = true
-	d.Facter.Inventory.Platform.Virtualization.Enabled = false
-	d.Facter.Inventory.Platform.Os.Enabled = true
-	d.Facter.Inventory.Platform.System.InitCheckPath = "/proc/1/exe"
-	d.Facter.Inventory.Platform.System.MachineID = "/etc/machine-id"
-	d.Facter.Inventory.Platform.System.MachineUUID = "/sys/class/dmi/id/product_uuid"
-	d.Facter.Inventory.Networks.Connections.Enabled = true
-	d.Facter.Inventory.Platform.Kernel.Enabled = true
-	d.Facter.Inventory.Platform.Hardware.Enabled = true
-	d.Facter.PerformanceProfiling.Enabled = false
+// ComplianceOptions contains the options for fetch compliance information
+type ComplianceOptions struct {
+	Enabled    bool   `yaml:"enabled"`
+	Profile    string `yaml:"profile"`
+	ResultFile string `yaml:"resultFile"`
+}
+
+// VulnerabilitiesOptions contains the options for fetch installed vulnerabilities
+type VulnerabilitiesOptions struct {
+	Enabled bool `yaml:"enabled"`
 }

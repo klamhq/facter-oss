@@ -28,15 +28,20 @@ decisions about how to configure systems.`,
 	}
 )
 
-func Execute() {
+func Execute() error {
 	if err := rootCmd.Execute(); err != nil {
-		logrus.Fatal(err)
+		logrus.Error(err)
+		return err
 	}
+	return nil
 
 }
 
 func init() {
+	rootCmd.SilenceUsage = true
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "path to facter config file")
+	viper.BindPFlag("config", rootCmd.PersistentFlags().Lookup("config"))
+
 	cobra.OnInitialize(initConfig)
 }
 
@@ -48,10 +53,9 @@ func initConfig() {
 	viper.AutomaticEnv()
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			logrus.Fatal("No config file found")
-		} else {
 			logrus.Info("Using config file:", viper.ConfigFileUsed())
+		} else {
+			logrus.Fatal("No config file found:", err)
 		}
-
 	}
 }
