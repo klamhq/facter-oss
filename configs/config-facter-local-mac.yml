@@ -3,17 +3,22 @@ facter:
   store:
     path: "/tmp/facter-store.db"
   logs:
-    debugMode: false
+    debugMode: true
   performanceProfiling:
     enabled: false
   sink:
-    enabled: true
     output:
-      enabled: true
       format: "proto"
-      type: "file"
+      type: "remote"  # local or remote
       outputDirectory: "/tmp"
       outputFilename: "export.iya"
+      facterServer: # use it if output.type is remote
+        serverHost: localhost
+        serverPort: "56230"
+        certificatePath: "./certs/client_cert.pem"
+        certificateKeyPath: "./certs/client_key.pem"
+        caPath: "./certs/ca_cert.pem"
+        sslHostname: "grpc.test.facter.fr"
   inventory:
     applications:
       enabled: true
@@ -55,9 +60,15 @@ facter:
     packages:
       enabled: true
     process:
-      enabled: false
+      enabled: true
     ssh:
       enabled: true
     user:
       enabled: true
       passwdFile: "/etc/passwd"
+  compliance:
+    enabled: false
+    profile: "xccdf_org.ssgproject.content_profile_cis_level1_server"
+    resultFile: "/tmp/openscap-results.xml"
+  vulnerabilities:
+    enabled: false

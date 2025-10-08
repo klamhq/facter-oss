@@ -1,0 +1,74 @@
+facter:
+  enabled: true
+  store:
+    path: "/tmp/facter-store.db"
+  logs:
+    debugMode: false
+  performanceProfiling:
+    enabled: false
+  sink:
+    output:
+      format: "proto"
+      type: "file"  # local or remote
+      outputDirectory: "/tmp"
+      outputFilename: "export.iya"
+      facterServer: # use it if output.type is remote
+        serverHost: localhost
+        serverPort: "56230"
+        certificatePath: ""
+        certificateKeyPath: ""
+        caPath: ""
+        sslHostname: "test.facter.fr"
+  inventory:
+    applications:
+      enabled: true
+      docker:
+        enabled: true
+    systemdService:
+      enabled: true
+    platform:
+      enabled: true
+      system:
+        initCheckPath: "/sbin/init"
+        machineID: "/etc/machine-id"
+        machineUUID: "/sys/class/dmi/id/product_uuid"
+      hardware:
+        enabled: true
+      os:
+        enabled: true
+      virtualization:
+        enabled: true
+      kernel:
+        enabled: true
+    packages:
+      enabled: true
+    process:
+      enabled: true
+    ssh:
+      enabled: true
+    user:
+      enabled: true
+      passwdFile: "/etc/passwd"
+    networks:
+      enabled: true
+      geoIp:
+        enabled: true
+        timeout: 10
+        googleGeoUrl: "https://www.googleapis.com/geolocation/v1/geolocate"
+        googleGeoApikey: "AIzaSyB9i6aHGUa5Iv0tfDb9sy_HqXUebFmk8wI"
+      ports:
+        enabled: true
+      publicIp:
+        enabled: true
+        publicIpApiUrl: "https://ifconfig.me/"
+        timeout: 15
+      firewall:
+        enabled: true
+      connections:
+        enabled: true
+  compliance:
+    enabled: false
+    profile: "xccdf_org.ssgproject.content_profile_cis_level1_server"
+    resultFile: "/tmp/openscap-results.xml"
+  vulnerabilities:
+    enabled: false

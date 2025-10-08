@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/klamhq/facter-oss/pkg/agent/collect/applications"
+	"github.com/klamhq/facter-oss/pkg/agent/collect/compliance"
 	"github.com/klamhq/facter-oss/pkg/agent/collect/networks"
 	"github.com/klamhq/facter-oss/pkg/agent/collect/packages"
 	"github.com/klamhq/facter-oss/pkg/agent/collect/platform"
@@ -16,6 +17,7 @@ import (
 	"github.com/klamhq/facter-oss/pkg/agent/collect/ssh"
 	"github.com/klamhq/facter-oss/pkg/agent/collect/systemservices"
 	"github.com/klamhq/facter-oss/pkg/agent/collect/users"
+	"github.com/klamhq/facter-oss/pkg/agent/collect/vulnerability"
 	"github.com/klamhq/facter-oss/pkg/agent/store"
 	"github.com/klamhq/facter-oss/pkg/models"
 	"github.com/klamhq/facter-oss/pkg/options"
@@ -34,14 +36,16 @@ type Builder struct {
 	WhoAmI func() (string, error)
 	Store  store.InventoryStore
 
-	Platform       platform.PlatformCollector
-	Packages       packages.PackagesCollector
-	Applications   applications.ApplicationsCollector
-	SystemServices systemservices.SystemServicesCollector
-	Networks       networks.NetworksCollector
-	Users          users.UsersCollector
-	Processes      process.ProcessCollector
-	SSHInfos       ssh.SSHInfosCollector
+	Platform            platform.PlatformCollector
+	Packages            packages.PackagesCollector
+	Applications        applications.ApplicationsCollector
+	SystemServices      systemservices.SystemServicesCollector
+	Networks            networks.NetworksCollector
+	Users               users.UsersCollector
+	Processes           process.ProcessCollector
+	SSHInfos            ssh.SSHInfosCollector
+	ComplianceReport    compliance.ComplianceCollector
+	VulnerabilityReport vulnerability.VulnerabilityCollector
 }
 
 func newInventoryStore(cfg options.RunOptions) (store.InventoryStore, error) {
@@ -100,17 +104,19 @@ func (b *Builder) Build(ctx context.Context) (*schema.HostInventory, error) {
 	// The order is as follows:
 	// 1) Platform
 	var (
-		platform     *schema.Platform
-		users        []*schema.User
-		pkgs         []*schema.Package
-		services     []*schema.SystemdService
-		processes    []*schema.Process
-		sshKeyAccess []*schema.SshKeyAccess
-		sshKeyInfos  []*schema.SshKeyInfo
-		knownHosts   []*schema.KnownHost
-		networks     *schema.Network
-		apps         []*schema.Application
-		mu           sync.Mutex
+		platform            *schema.Platform
+		users               []*schema.User
+		pkgs                []*schema.Package
+		services            []*schema.SystemdService
+		processes           []*schema.Process
+		sshKeyAccess        []*schema.SshKeyAccess
+		sshKeyInfos         []*schema.SshKeyInfo
+		knownHosts          []*schema.KnownHost
+		networks            *schema.Network
+		apps                []*schema.Application
+		complianceReport    *schema.ComplianceReport
+		vulnerabilityReport *schema.VulnerabilityReport
+		mu                  sync.Mutex
 	)
 
 	g.Go(func() error {
@@ -123,7 +129,7 @@ func (b *Builder) Build(ctx context.Context) (*schema.HostInventory, error) {
 			mu.Lock()
 			platform = p
 			mu.Unlock()
-			defer func(n string) { b.Log.WithField("collector", n).WithField("dur", time.Since(start)).Info("done") }("platform")
+			defer func(n string) { b.Log.WithField("collector", n).WithField("duration", time.Since(start)).Info("done") }("platform")
 		}
 		g.Go(func() error {
 			if b.Cfg.Facter.Inventory.SystemdService.Enabled {
@@ -136,7 +142,7 @@ func (b *Builder) Build(ctx context.Context) (*schema.HostInventory, error) {
 				mu.Lock()
 				services = s
 				mu.Unlock()
-				defer func(n string) { b.Log.WithField("collector", n).WithField("dur", time.Since(start)).Info("done") }("initsystem services")
+				defer func(n string) { b.Log.WithField("collector", n).WithField("duration", time.Since(start)).Info("done") }("initsystem services")
 
 			}
 			return nil
@@ -155,7 +161,7 @@ func (b *Builder) Build(ctx context.Context) (*schema.HostInventory, error) {
 			mu.Lock()
 			pkgs = pk
 			mu.Unlock()
-			defer func(n string) { b.Log.WithField("collector", n).WithField("dur", time.Since(start)).Info("done") }("packages")
+			defer func(n string) { b.Log.WithField("collector", n).WithField("duration", time.Since(start)).Info("done") }("packages")
 
 		}
 		return nil
@@ -172,26 +178,12 @@ func (b *Builder) Build(ctx context.Context) (*schema.HostInventory, error) {
 			mu.Lock()
 			apps = a
 			mu.Unlock()
-			defer func(n string) { b.Log.WithField("collector", n).WithField("dur", time.Since(start)).Info("done") }("applications")
+			defer func(n string) { b.Log.WithField("collector", n).WithField("duration", time.Since(start)).Info("done") }("applications")
 		}
 		return nil
 	})
 
-	// 4) initsystem services
-	// g.Go(func() error {
-	// 	if b.Cfg.Facter.Inventory.SystemdService.Enabled {
-	// 		start := time.Now()
-	// 		services, err = b.SystemServices.CollectSystemServices(ctx, platform.InitSystem)
-	// 		if err != nil {
-	// 			b.Log.WithError(err).Error("initsystem services")
-	// 		}
-	// 		defer func(n string) { b.Log.WithField("collector", n).WithField("dur", time.Since(start)).Info("done") }("initsystem services")
-
-	// 	}
-	// 	return nil
-	// })
-
-	// 5) Networks
+	// 4) Networks
 	g.Go(func() error {
 		if b.Cfg.Facter.Inventory.Networks.Enabled {
 			start := time.Now()
@@ -202,13 +194,13 @@ func (b *Builder) Build(ctx context.Context) (*schema.HostInventory, error) {
 			mu.Lock()
 			networks = net
 			mu.Unlock()
-			defer func(n string) { b.Log.WithField("collector", n).WithField("dur", time.Since(start)).Info("done") }("networks")
+			defer func(n string) { b.Log.WithField("collector", n).WithField("duration", time.Since(start)).Info("done") }("networks")
 
 		}
 		return nil
 	})
 
-	// 6) Users
+	// 5) Users
 	g.Go(func() error {
 		if b.Cfg.Facter.Inventory.User.Enabled {
 			start := time.Now()
@@ -232,13 +224,13 @@ func (b *Builder) Build(ctx context.Context) (*schema.HostInventory, error) {
 				sshKeyInfos = ski
 				mu.Unlock()
 			}
-			defer func(n string) { b.Log.WithField("collector", n).WithField("dur", time.Since(start)).Info("done") }("users and ssh")
+			defer func(n string) { b.Log.WithField("collector", n).WithField("duration", time.Since(start)).Info("done") }("users and ssh")
 
 		}
 		return nil
 	})
 
-	// 7) Processes
+	// 6) Processes
 	g.Go(func() error {
 		if b.Cfg.Facter.Inventory.Process.Enabled {
 			start := time.Now()
@@ -249,13 +241,49 @@ func (b *Builder) Build(ctx context.Context) (*schema.HostInventory, error) {
 			mu.Lock()
 			processes = proc
 			mu.Unlock()
-			defer func(n string) { b.Log.WithField("collector", n).WithField("dur", time.Since(start)).Info("done") }("processes")
+			defer func(n string) { b.Log.WithField("collector", n).WithField("duration", time.Since(start)).Info("done") }("processes")
 
 		}
 		return nil
 	})
+
+	// 7) Compliance
+	g.Go(func() error {
+		if b.Cfg.Facter.Compliance.Enabled {
+			start := time.Now()
+			cReport, cReportErr := b.ComplianceReport.CollectCompliance(ctx)
+			if cReportErr != nil {
+				b.Log.WithError(cReportErr).Error("compliance report")
+			}
+			mu.Lock()
+			complianceReport = cReport
+			mu.Unlock()
+			defer func(n string) { b.Log.WithField("collector", n).WithField("duration", time.Since(start)).Info("done") }("compliance report")
+
+		}
+		return nil
+	})
+
 	if err := g.Wait(); err != nil {
 		return nil, err
+	}
+
+	// 8) Vulnerabilities
+	if b.Cfg.Facter.Vulnerabilities.Enabled {
+		start := time.Now()
+		var vReportErr error
+		if runtime.GOOS == "darwin" {
+			b.Log.
+				WithField("collector", "vulnerability report").
+				Warn("Skipping vulnerability scan: unsupported on macOS (darwin)")
+		} else {
+			vulnerabilityReport, vReportErr = b.VulnerabilityReport.CollectVulnerability(ctx, pkgs)
+			if vReportErr != nil {
+				b.Log.WithError(vReportErr).Error("vulnerability report")
+			}
+		}
+
+		defer func(n string) { b.Log.WithField("collector", n).WithField("duration", time.Since(start)).Info("done") }("vulnerability report")
 	}
 
 	inv.Platform = platform
@@ -268,6 +296,8 @@ func (b *Builder) Build(ctx context.Context) (*schema.HostInventory, error) {
 	inv.KnownHost = knownHosts
 	inv.SshKeyInfo = sshKeyInfos
 	inv.SystemdService = services
+	inv.ComplianceReport = complianceReport
+	inv.VulnerabilityReport = vulnerabilityReport
 
 	return inv, nil
 }

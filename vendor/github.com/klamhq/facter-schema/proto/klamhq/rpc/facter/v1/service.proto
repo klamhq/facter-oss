@@ -21,7 +21,9 @@ message HostInventory {
   repeated SystemdService systemd_service = 11; /** Systemd service information. */
   repeated KnownHost known_host = 12; /** Known hosts information. */
   repeated Process processes = 13; /** List of processes running on the host. */
-  string created_at = 14; /** Creation date of the inventory. */
+  VulnerabilityReport vulnerability_report = 14; /** Match reports of vulnerabilities and packages. */
+  ComplianceReport compliance_report = 15; /** Compliance report. */
+  string created_at = 16; /** Creation date of the inventory. */
 }
 
 message HostDeltaInventory {
@@ -451,4 +453,76 @@ message FirewallRule {
   string value_limit_burst = 35;
   string param_icmp_type = 36;
   string value_icmp_type = 37;
+}
+
+/**
+ * Vulnerability details.
+ */
+message MatchedVuln {
+  string vulnerability_id = 1; /** Vulnerability ID. */
+  string severity = 2; /** Vulnerability severity. */
+  string title = 3; /** Vulnerability title. */
+  string description = 4; /** Vulnerability description. */
+  string fixed_version = 5; /** Version where the vulnerability is fixed. */
+}
+
+/** Package vulnerability match information. */
+message PackageVulnMatch {
+  string package_name = 1; /** Name of the vulnerable package. */
+  string installed_version = 2; /** Installed version of the package. */
+  repeated MatchedVuln vulnerabilities = 3; /** List of matched vulnerabilities. */
+  bool matched = 4; /** Whether a match was found. */
+}
+
+/** Report containing all vulnerability matches. */
+message VulnerabilityReport {
+  repeated PackageVulnMatch matches = 1; /** List of package vulnerability matches. */
+}
+
+/** Represents a compliance report. */
+message ComplianceReport {
+  Score score = 1; /** Overall compliance score. */
+  string profile = 2; /** Compliance profile used. */
+  repeated RuleCheckResult rule_results = 3; /** List of rule check results. */
+  string updated_at = 4; /** Last update date of the compliance information. */
+}
+
+/** Represents a compliance score. */
+message Score {
+  string maximum = 1; /** Maximum possible score. */
+  string value = 2; /** Numerical score value. */
+}
+
+/** Represents the result of a rule check. */
+message RuleCheckResult {
+  string id = 1; /** Unique identifier for the rule. */
+  string severity = 2; /** Severity of the rule (e.g., low, medium, high). */
+  string title = 3; /** Title of the rule. */
+  string description = 4; /** Description of the rule. */
+  string result = 5; /** Result of the rule check (e.g., pass, fail). */
+  string fix = 6; /** Suggested fix for the rule, if applicable. */
+  string updated_at = 7; /** Last update date of the rule check information. */
+}
+
+/**
+ * gRPC-related messages and service definitions.
+ */
+
+/** Empty logger message (reserved). */
+message Logger {}
+
+/** Configuration message (reserved). */
+message Cfg {}
+
+/** Response message for gRPC services. */
+message InventoryResponse {
+  string message = 1; /** Response message text. */
+}
+
+/**
+ * gRPC service definition for sending host information.
+ */
+service FactGrpcService {
+  /** Sends the Inventory message and receives a Response. */
+  rpc Inventory(InventoryRequest) returns (InventoryResponse); /** Sends the Inventory message and receives a Response. */
 }

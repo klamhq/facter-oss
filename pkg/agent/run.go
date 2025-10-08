@@ -5,12 +5,14 @@ import (
 	"time"
 
 	"github.com/klamhq/facter-oss/pkg/agent/collect/applications"
+	"github.com/klamhq/facter-oss/pkg/agent/collect/compliance"
 	"github.com/klamhq/facter-oss/pkg/agent/collect/networks"
 	"github.com/klamhq/facter-oss/pkg/agent/collect/packages"
 	"github.com/klamhq/facter-oss/pkg/agent/collect/platform"
 	"github.com/klamhq/facter-oss/pkg/agent/collect/process"
 	"github.com/klamhq/facter-oss/pkg/agent/collect/systemservices"
 	"github.com/klamhq/facter-oss/pkg/agent/collect/users"
+	"github.com/klamhq/facter-oss/pkg/agent/collect/vulnerability"
 	"github.com/klamhq/facter-oss/pkg/agent/collectors/system"
 	"github.com/klamhq/facter-oss/pkg/agent/inventory"
 	"github.com/klamhq/facter-oss/pkg/agent/sink"
@@ -26,8 +28,6 @@ import (
 // It also handles performance profiling if enabled in the configuration.
 func Run(cfg *options.RunOptions) error {
 	start := time.Now() // Used to mesure running duration
-	// get default value
-	options.DefaultNewRunOptions()
 	defaultLogLevel := logrus.InfoLevel
 	logrus.Info("[AGENT] Collecting system facts...")
 	if cfg.Facter.Logs.DebugMode {
@@ -66,6 +66,10 @@ func Run(cfg *options.RunOptions) error {
 	b.Users = users.New(b.Log, &b.Cfg.Facter.Inventory.User)
 
 	b.Processes = process.New(b.Log, &b.Cfg.Facter.Inventory.Process)
+
+	b.ComplianceReport = compliance.New(b.Log, &b.Cfg.Facter.Compliance)
+
+	b.VulnerabilityReport = vulnerability.New(b.Log, &b.Cfg.Facter.Vulnerabilities)
 
 	inventory, err := b.Build(context.Background())
 	if err != nil {
