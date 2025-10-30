@@ -267,8 +267,6 @@ func TestAgentRunStoreCorruption(t *testing.T) {
 	assert.NoError(t, err)
 
 	// Run should handle corrupted store gracefully
-	err = agent.Run(opts)
-	// Depending on implementation, this might succeed or fail
 	// The important part is it shouldn't panic
 	assert.NotPanics(t, func() {
 		_ = agent.Run(opts)
