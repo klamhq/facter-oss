@@ -1,20 +1,79 @@
-site_name: Facter-OSS
+site_name: Facter
 site_url: https://klamhq.github.io/facter-oss/
 site_dir: public
 repo_name: klamhq/facter-oss
 repo_url: https://github.com/klamhq/facter-oss
 nav:
   - Home: index.md
-  - Concepts: concepts/index.md
-  - Deployments: deployments/index.md
-  - Settings: settings/index.md
-  - Guides: guides/index.md
+  - Concepts:
+    - Overview: concepts/index.md
+    - Architecture: concepts/architecture.md
+    - Data Model: concepts/data-model.md
+    - Rule Engine: concepts/rule-engine.md
+    - Security: concepts/security.md
+  - Components:
+    - facter-oss (Agent): components/facter-oss.md
+    - facter-grpc: components/facter-grpc.md
+    - facter-api: components/facter-api.md
+    - facter-rule-engine: components/facter-rule-engine.md
+    - facter-ui: components/facter-ui.md
+    - facter-schema: components/facter-schema.md
+  - Configuration:
+    - Overview: settings/index.md
+    - facter-oss: settings/facter-oss.md
+    - facter-grpc: settings/facter-grpc.md
+    - facter-api: settings/facter-api.md
+    - facter-rule-engine: settings/facter-rule-engine.md
+  - Deployments:
+    - Overview: deployments/index.md
+    - Quick Start: deployments/quickstart.md
+    - Docker: deployments/docker.md
+    - Kubernetes: deployments/kubernetes.md
+  - Guides:
+    - Overview: guides/index.md
+    - Getting Started: guides/getting-started.md
+    - Writing Audit Rules: guides/writing-rules.md
+    - Cypher Query Guide: guides/cypher-queries.md
 theme:
   name: material
   logo: assets/logo/facter.png
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
   features:
-      - navigation.tabs
-      - toc.follow
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - toc.follow
+    - content.code.copy
+    - content.code.annotate
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - attr_list
+  - md_in_html
+  - tables
 extra:
   version:
     provider: mike

@@ -67,7 +67,7 @@ func (e *PackageExtractRegexpBased) Extract(ctx context.Context, logger *logrus.
 
 	// Exécution
 	output, err := command.CombinedOutput()
-	logger.Debugf("Package extractor command output: %s", output)
+	// logger.Debugf("Package extractor command output: %s", output)
 	if err != nil {
 		return nil, err
 	}
