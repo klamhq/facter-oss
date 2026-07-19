@@ -8,7 +8,6 @@ Facter can be deployed in several ways depending on your environment.
 | ---------------------------- | --------- | ------------------------ |
 | [Quick Start](quickstart.md) | ⭐ Low     | Local testing, demo      |
 | [Docker Compose](docker.md)  | ⭐⭐ Medium | Development, small teams |
-| [Kubernetes](kubernetes.md)  | ⭐⭐⭐ High  | Production at scale      |
 
 ## Architecture Requirements
 

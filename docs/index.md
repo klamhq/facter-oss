@@ -58,44 +58,7 @@ Once your infrastructure is in the graph, you can:
 
 ## Architecture Overview
 
-```
-┌──────────────────────────────────────────────────────────────────────────────┐
-│                           MONITORED HOSTS                                     │
-│  ┌─────────────┐   ┌─────────────┐   ┌─────────────┐                        │
-│  │ facter-oss  │   │ facter-oss  │   │ facter-oss  │  (Linux agent)         │
-└──┴──────┬──────┘───┴──────┬──────┘───┴──────┬──────┘────────────────────────┘
-          │  gRPC / mTLS    │                  │
-          └────────┬────────┘                  │
-                   ▼                           │
-          ┌────────────────┐                   │
-          │  facter-grpc   │◄──────────────────┘
-          │  (port 56230)  │
-          └───────┬────────┘
-                  │ Cypher
-                  ▼
-         ┌─────────────────┐
-         │   Apache AGE    │   (PostgreSQL + graph extension)
-         │  (port 5433)    │
-         └────────┬────────┘
-                  │                     ┌────────────────────┐
-          ┌───────┴──────┐              │  facter-rule-engine│
-          │  facter-api  │              │  (port 8081)       │
-          │ (port 56231) │              │  ┌──────────────┐  │
-          │  GraphQL     │              │  │ PostgreSQL   │  │
-          └──────┬───────┘              │  │ (port 5432)  │  │
-                 │                      └────────┬─────────┘
-                 │ GraphQL                       │ gRPC
-                 │                               │ (CheckRules)
-          ┌──────▼───────────────────────────────▼───┐
-          │              facter-ui                    │
-          │       (Vue.js / Quasar, port 9000)        │
-          └────────────────────┬──────────────────────┘
-                               │
-                        ┌──────▼──────┐
-                        │  Keycloak   │   (Identity Provider)
-                        │ (port 8080) │
-                        └─────────────┘
-```
+![ARCHITECTURE](./assets/diagrams/architecture.png)
 
 ---
 
@@ -107,5 +70,4 @@ Once your infrastructure is in the graph, you can:
 - **Compliance rules**: YAML-defined audit rules executed as direct Cypher queries against the graph
 - **OpenSCAP integration**: CIS benchmark compliance results ingested into the graph
 - **Vulnerability matching**: packages cross-referenced with CVE databases
-- **Multi-tenant**: Keycloak-backed RBAC with `facter-admin` and `facter-viewer` roles
 - **mTLS everywhere**: all gRPC communication is mutually authenticated

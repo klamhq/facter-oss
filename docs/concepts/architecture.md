@@ -4,8 +4,9 @@
 
 The Facter platform is composed of six independent services that communicate over defined protocols. The diagram below shows the full architecture.
 
-> **Diagram**: [architecture-overview.drawio](../assets/diagrams/architecture-overview.drawio) — open with [draw.io](https://app.diagrams.net/) or the VS Code draw.io extension.
+> **Diagram**:
 
+![ARCHITECTURE](../assets/diagrams/architecture.png)
 ---
 
 ## Components

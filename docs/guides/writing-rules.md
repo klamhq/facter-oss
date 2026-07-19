@@ -11,24 +11,23 @@ Rules are stored in the database (via the REST API) or can be loaded from YAML f
 ### YAML File Format
 
 ```yaml
-id: R-SSH-0001
-name: "Root SSH login must be disabled"
+id: R-SYS-2001
+name: "Hosts with outdated packages"
 description: |
-  Detects hosts where the SSH daemon does not explicitly disable root login.
-category: IDENTITY_ACCESS
-severity: HIGH
+  Detects hosts that have packages available for upgrade.
+category: INFRASTRUCTURE
+severity: MEDIUM
 status: approved
 enabled: true
 version: 1
-priority: P1
+priority: P2
 created_by: "security-team"
 cypher_query: |
-  MATCH (h:Host)-[:HAS_SSH_CONFIG]-(c:SSHConfig)
-  WHERE c.permit_root_login IS NULL OR c.permit_root_login <> 'no'
-  RETURN h AS seed, h.hostname AS hostname
+  MATCH (h:Host)-[:IS_NOT_UP_TO_DATE]->(p:Package)
+  RETURN h AS seed, h.hostname AS hostname, count(p) AS outdated_count
 tests:
-  - name: root_login_enabled
-    input_graph: root_login_enabled.graph.json
+  - name: has_outdated_packages
+    input_graph: outdated_packages.graph.json
     expect_findings: 1
 ```
 
@@ -36,17 +35,17 @@ tests:
 
 ```json
 {
-  "id": "R-SSH-0001",
-  "name": "Root SSH login must be disabled",
-  "description": "Detects hosts where the SSH daemon does not explicitly disable root login.",
-  "category": "IDENTITY_ACCESS",
-  "severity": "HIGH",
+  "id": "R-SYS-2001",
+  "name": "Hosts with outdated packages",
+  "description": "Detects hosts that have packages available for upgrade.",
+  "category": "INFRASTRUCTURE",
+  "severity": "MEDIUM",
   "status": "approved",
   "enabled": true,
   "version": 1,
-  "priority": "P1",
+  "priority": "P2",
   "created_by": "security-team",
-  "cypher_query": "MATCH (h:Host)-[:HAS_SSH_CONFIG]-(c:SSHConfig) WHERE ... RETURN h AS seed, h.hostname AS hostname"
+  "cypher_query": "MATCH (h:Host)-[:IS_NOT_UP_TO_DATE]->(p:Package) RETURN h AS seed, h.hostname AS hostname, count(p) AS outdated_count"
 }
 ```
 
@@ -113,9 +112,9 @@ All queries must contain `MATCH` and `RETURN`.
 Return the main node as `seed` so the UI can link the finding back to a specific object:
 
 ```cypher
-MATCH (h:Host)-[:HAS_USER]-(u:User)
-WHERE u.uid = 0 AND u.name <> 'root'
-RETURN h AS seed, h.hostname AS hostname, u.name AS username, u.uid AS uid
+MATCH (h:Host)-[:HAS_USER]->(u:User)
+WHERE u.uid = "0" AND u.username <> 'root'
+RETURN h AS seed, h.hostname AS hostname, u.username AS username, u.uid AS uid
 ```
 
 ### No data sentinel
@@ -124,9 +123,9 @@ If the query applies only to hosts that have a certain collector enabled, return
 
 ```cypher
 MATCH (h:Host)
-OPTIONAL MATCH (h)-[:HAS_SSH_CONFIG]-(c:SSHConfig)
-WITH h, count(c) AS config_count
-WHERE config_count = 0
+OPTIONAL MATCH (h)-[:RUNS_SYSTEMD_SERVICE]->(i:ServiceInstance)
+WITH h, count(i) AS service_count
+WHERE service_count = 0
 RETURN true AS nodata, h.hostname AS hostname
 ```
 
@@ -153,7 +152,7 @@ version: 1
 priority: P2
 created_by: "facter-rule-engine"
 cypher_query: |
-  MATCH (k:SSHKey)-[:DEPLOYED_ON]->(h:Host)
+  MATCH (h:Host)-[:HAS_SSH_KEY]->(k:SshKey)
   WITH k, collect(DISTINCT h.hostname) AS hosts, count(DISTINCT h) AS cnt
   WHERE cnt > 1
   RETURN k AS seed, hosts, cnt, k.fingerprint AS fingerprint
@@ -195,9 +194,9 @@ version: 1
 priority: P1
 created_by: "security-team"
 cypher_query: |
-  MATCH (h:Host)-[:HAS_USER]-(u:User)
-  WHERE u.uid = 0 AND u.name <> 'root'
-  RETURN u AS seed, h.hostname AS hostname, u.name AS username, u.uid AS uid
+  MATCH (h:Host)-[:HAS_USER]->(u:User)
+  WHERE u.uid = "0" AND u.username <> 'root'
+  RETURN u AS seed, h.hostname AS hostname, u.username AS username, u.uid AS uid
 ```
 
 ### 4. SSH listening on a non-standard port
@@ -214,9 +213,10 @@ enabled: true
 version: 1
 priority: P3
 cypher_query: |
-  MATCH (h:Host)-[:LISTENS_ON]-(p:Port)
-  WHERE p.service = 'ssh' AND p.port <> 22
-  RETURN p AS seed, h.hostname AS hostname, p.port AS actual_port
+  MATCH (p:Process)-[:OPENS]->(l:ListeningConnection)-[:HAS_SOURCE_IP]->(ip:IP)
+  MATCH (h:Host)-[:HAS_PROCESS]->(p)
+  WHERE p.name = 'sshd' AND l.localPort <> '22'
+  RETURN l AS seed, h.hostname AS hostname, l.localPort AS actual_port
 ```
 
 ---

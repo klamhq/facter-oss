@@ -25,7 +25,7 @@ priority: P1                             # P1 (highest) to P4
 
 # The Cypher query executed against Apache AGE
 cypher_query: |
-  MATCH (k:SSHKey)-[:DEPLOYED_ON]->(h:Host)
+  MATCH (h:Host)-[:HAS_SSH_KEY]->(k:SshKey)
   WITH k, collect(DISTINCT h.hostname) AS hosts, count(DISTINCT h) AS cnt
   WHERE cnt > 1
   RETURN k.fingerprint AS fingerprint, hosts, cnt

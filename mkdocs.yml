@@ -28,7 +28,6 @@ nav:
     - Overview: deployments/index.md
     - Quick Start: deployments/quickstart.md
     - Docker: deployments/docker.md
-    - Kubernetes: deployments/kubernetes.md
   - Guides:
     - Overview: guides/index.md
     - Getting Started: guides/getting-started.md
@@ -61,6 +60,9 @@ theme:
 markdown_extensions:
   - admonition
   - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid
