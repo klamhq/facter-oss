@@ -21,10 +21,8 @@ WORKDIR /tmp/facter
 
 COPY . /tmp/facter
 
-RUN make buildLinux
+RUN make build
 
-RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.62.1
+RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin v0.69.3
 
-RUN cp /tmp/facter/bin/facter /usr/local/bin/facter
-
-ENTRYPOINT ["/usr/local/bin/facter", "agent", "--config", "/tmp/facter/configs/config-facter-only-mac-docker.yml"]
+ENTRYPOINT ["/usr/local/bin/facter-oss", "agent", "--config", "/tmp/facter/configs/config-facter-local-mac.yml"]

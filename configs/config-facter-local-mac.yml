@@ -14,9 +14,10 @@ facter:
       outputFilename: "export.iya"
       facterServer: # use it if output.type is remote
         serverHost: localhost
+        #serverHost: localhost
         serverPort: "56230"
-        certificatePath: "./certs/client_cert.pem"
-        certificateKeyPath: "./certs/client_key.pem"
+        certificatePath: "./certs/facter_cert.pem"
+        certificateKeyPath: "./certs/facter_key.pem"
         caPath: "./certs/ca_cert.pem"
         sslHostname: "grpc.test.facter.fr"
   inventory:
@@ -67,8 +68,8 @@ facter:
       enabled: true
       passwdFile: "/etc/passwd"
   compliance:
-    enabled: false
-    profile: "xccdf_org.ssgproject.content_profile_cis_level1_server"
+    enabled: true
+    profile: "xccdf_org.ssgproject.content_profile_cis_server_l1"
     resultFile: "/tmp/openscap-results.xml"
   vulnerabilities:
-    enabled: false
+    enabled: true

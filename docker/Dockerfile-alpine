@@ -6,10 +6,12 @@ COPY . /tmp/facter
 
 RUN apt update && apt install  make
 
-RUN make buildLinux
+RUN make build
 
-RUN cp /tmp/facter/bin/facter /usr/local/bin/facter
+RUN cp /tmp/facter/bin/facter-oss /usr/local/bin/facter-oss
 
 RUN cp /tmp/facter/configs/config-facter-only.yml /usr/local/bin/
 
-ENTRYPOINT ["/usr/local/bin/facter", "--config", "/usr/local/bin/config-facter-only.yml"]
+RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin v0.69.3
+
+ENTRYPOINT ["/usr/local/bin/facter-oss", "--config", "/usr/local/bin/config-facter-only.yml"]

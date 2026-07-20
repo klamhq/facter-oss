@@ -1,0 +1,171 @@
+<mxfile host="app.diagrams.net" version="21.7.5">
+  <diagram name="Facter Architecture Overview" id="facter-arch-overview">
+    <mxGraphModel dx="1400" dy="900" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- ============================== -->
+        <!-- ZONE: Monitored Hosts          -->
+        <!-- ============================== -->
+        <mxCell id="zone-hosts" value="Monitored Hosts" style="swimlane;startSize=30;fillColor=#dae8fc;strokeColor=#6c8ebf;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="160" width="200" height="420" as="geometry" />
+        </mxCell>
+
+        <mxCell id="host1" value="&lt;b&gt;facter-oss&lt;/b&gt;&#xa;Host: server-01" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="zone-hosts">
+          <mxGeometry x="20" y="50" width="160" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="host2" value="&lt;b&gt;facter-oss&lt;/b&gt;&#xa;Host: server-02" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="zone-hosts">
+          <mxGeometry x="20" y="140" width="160" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="host3" value="&lt;b&gt;facter-oss&lt;/b&gt;&#xa;Host: server-N" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontSize=11;" vertex="1" parent="zone-hosts">
+          <mxGeometry x="20" y="230" width="160" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="host-dots" value="..." style="text;html=1;align=center;verticalAlign=middle;fontSize=20;" vertex="1" parent="zone-hosts">
+          <mxGeometry x="80" y="305" width="40" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- ============================== -->
+        <!-- ZONE: Backend                  -->
+        <!-- ============================== -->
+        <mxCell id="zone-backend" value="Backend" style="swimlane;startSize=30;fillColor=#fff2cc;strokeColor=#d6b656;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="320" y="80" width="580" height="590" as="geometry" />
+        </mxCell>
+
+        <!-- facter-grpc -->
+        <mxCell id="grpc-box" value="&lt;b&gt;facter-grpc&lt;/b&gt;&#xa;gRPC Server&#xa;:56230" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="zone-backend">
+          <mxGeometry x="40" y="80" width="160" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Apache AGE -->
+        <mxCell id="age-box" value="&lt;b&gt;Apache AGE&lt;/b&gt;&#xa;PostgreSQL + Graph&#xa;:5433" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;boundedLbl=1;backgroundOutline=1;size=15;" vertex="1" parent="zone-backend">
+          <mxGeometry x="40" y="260" width="160" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- facter-api -->
+        <mxCell id="api-box" value="&lt;b&gt;facter-api&lt;/b&gt;&#xa;GraphQL Gateway&#xa;:56231" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="zone-backend">
+          <mxGeometry x="370" y="80" width="160" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- facter-rule-engine -->
+        <mxCell id="re-box" value="&lt;b&gt;facter-rule-engine&lt;/b&gt;&#xa;REST API&#xa;:8081" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontSize=11;" vertex="1" parent="zone-backend">
+          <mxGeometry x="370" y="260" width="160" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- PostgreSQL rule-engine -->
+        <mxCell id="pg-box" value="&lt;b&gt;PostgreSQL&lt;/b&gt;&#xa;Rules DB&#xa;:5432" style="shape=cylinder3;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontSize=11;boundedLbl=1;backgroundOutline=1;size=15;" vertex="1" parent="zone-backend">
+          <mxGeometry x="370" y="430" width="160" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- ============================== -->
+        <!-- ZONE: Frontend                 -->
+        <!-- ============================== -->
+        <mxCell id="zone-ui" value="Frontend" style="swimlane;startSize=30;fillColor=#d5e8d4;strokeColor=#82b366;fontStyle=1;fontSize=13;rounded=1;" vertex="1" parent="1">
+          <mxGeometry x="980" y="160" width="200" height="200" as="geometry" />
+        </mxCell>
+
+        <mxCell id="ui-box" value="&lt;b&gt;facter-ui&lt;/b&gt;&#xa;Vue.js / Quasar&#xa;:5173" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontSize=11;" vertex="1" parent="zone-ui">
+          <mxGeometry x="20" y="60" width="160" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- ============================== -->
+        <!-- Keycloak                       -->
+        <!-- ============================== -->
+        <mxCell id="kc-box" value="&lt;b&gt;Keycloak&lt;/b&gt;&#xa;Identity Provider&#xa;:8080" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="980" y="500" width="200" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- ============================== -->
+        <!-- Connections                    -->
+        <!-- ============================== -->
+
+        <!-- facter-oss → facter-grpc  (gRPC/mTLS) -->
+        <mxCell id="edge-oss-grpc" value="gRPC / mTLS&#xa;(SPIFFE)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#6c8ebf;fontColor=#6c8ebf;fontSize=10;" edge="1" source="host1" target="grpc-box" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-oss-grpc2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#6c8ebf;strokeDashArray=5 5;" edge="1" source="host2" target="grpc-box" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="edge-oss-grpc3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#6c8ebf;strokeDashArray=5 5;" edge="1" source="host3" target="grpc-box" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- facter-grpc ↔ Apache AGE (Cypher) -->
+        <mxCell id="edge-grpc-age" value="Cypher / SQL" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#b85450;fontColor=#b85450;fontSize=10;" edge="1" source="grpc-box" target="age-box" parent="zone-backend">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- facter-api ↔ Apache AGE (Cypher) -->
+        <mxCell id="edge-api-age" value="Cypher / SQL" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#b85450;fontColor=#b85450;fontSize=10;" edge="1" source="api-box" target="age-box" parent="zone-backend">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- facter-rule-engine → facter-grpc (CheckRules gRPC) -->
+        <mxCell id="edge-re-grpc" value="gRPC / mTLS&#xa;(CheckRules)" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#d6b656;fontColor=#d6b656;fontSize=10;" edge="1" source="re-box" target="grpc-box" parent="zone-backend">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- facter-rule-engine ↔ PostgreSQL -->
+        <mxCell id="edge-re-pg" value="SQL" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#b85450;fontColor=#b85450;fontSize=10;" edge="1" source="re-box" target="pg-box" parent="zone-backend">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- facter-ui → facter-api (GraphQL) -->
+        <mxCell id="edge-ui-api" value="GraphQL / HTTPS" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#82b366;fontColor=#82b366;fontSize=10;" edge="1" source="ui-box" target="api-box" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- facter-ui → facter-rule-engine (REST) -->
+        <mxCell id="edge-ui-re" value="REST / HTTPS" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#82b366;fontColor=#82b366;fontSize=10;" edge="1" source="ui-box" target="re-box" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- facter-ui → Keycloak (OIDC) -->
+        <mxCell id="edge-ui-kc" value="OIDC" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#9673a6;fontColor=#9673a6;fontSize=10;" edge="1" source="ui-box" target="kc-box" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- facter-api → Keycloak (JWKS) -->
+        <mxCell id="edge-api-kc" value="JWKS / JWT" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#9673a6;fontColor=#9673a6;fontSize=10;dashed=1;" edge="1" source="api-box" target="kc-box" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- facter-rule-engine → Keycloak (JWKS) -->
+        <mxCell id="edge-re-kc" value="JWKS / JWT" style="edgeStyle=orthogonalEdgeStyle;rounded=0;strokeColor=#9673a6;fontColor=#9673a6;fontSize=10;dashed=1;" edge="1" source="re-box" target="kc-box" parent="1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ============================== -->
+        <!-- Legend                         -->
+        <!-- ============================== -->
+        <mxCell id="legend" value="&lt;b&gt;Legend&lt;/b&gt;" style="swimlane;startSize=25;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="650" width="260" height="190" as="geometry" />
+        </mxCell>
+
+        <mxCell id="leg1" value="gRPC / mTLS (SPIFFE)" style="text;html=1;fontSize=10;fontColor=#6c8ebf;strokeColor=#6c8ebf;fillColor=none;align=left;" vertex="1" parent="legend">
+          <mxGeometry x="10" y="35" width="240" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="leg2" value="SQL / Cypher (database)" style="text;html=1;fontSize=10;fontColor=#b85450;strokeColor=#b85450;fillColor=none;align=left;" vertex="1" parent="legend">
+          <mxGeometry x="10" y="65" width="240" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="leg3" value="GraphQL / REST (HTTP)" style="text;html=1;fontSize=10;fontColor=#82b366;strokeColor=#82b366;fillColor=none;align=left;" vertex="1" parent="legend">
+          <mxGeometry x="10" y="95" width="240" height="25" as="geometry" />
+        </mxCell>
+        <mxCell id="leg4" value="OIDC / JWT (auth)" style="text;html=1;fontSize=10;fontColor=#9673a6;strokeColor=#9673a6;fillColor=none;align=left;" vertex="1" parent="legend">
+          <mxGeometry x="10" y="125" width="240" height="25" as="geometry" />
+        </mxCell>
+
+        <!-- ============================== -->
+        <!-- facter-schema note             -->
+        <!-- ============================== -->
+        <mxCell id="schema-note" value="&lt;b&gt;facter-schema&lt;/b&gt;&#xa;Shared Protobuf definitions&#xa;(used at build time by facter-oss,&#xa;facter-grpc and facter-rule-engine)" style="shape=note;whiteSpace=wrap;html=1;backgroundOutline=1;size=15;fillColor=#f5f5f5;strokeColor=#666666;fontColor=#333333;fontSize=10;" vertex="1" parent="1">
+          <mxGeometry x="980" y="370" width="200" height="100" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

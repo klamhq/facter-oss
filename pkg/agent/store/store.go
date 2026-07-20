@@ -65,6 +65,7 @@ func (b *boltInventoryStore) Delete(hostname string) error {
 	})
 }
 
+// Close closes the BoltDB database.
 func (b *boltInventoryStore) Close() error {
 	if b == nil || b.db == nil {
 		return nil

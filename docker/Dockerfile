@@ -25,7 +25,7 @@ ENV GOROOT=/usr/local/go
 WORKDIR /tmp/facter
 COPY . /tmp/facter
 
-RUN make buildLinux
+RUN make build
 
 # Installer trivy
 RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b /usr/local/bin v0.62.1
