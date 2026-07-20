@@ -6,14 +6,14 @@ Thank you for your interest in contributing. This document applies to all reposi
 
 ## Repositories
 
-| Repository | Description |
-|---|---|
-| [facter-oss](https://github.com/klamhq/facter-oss) | Go agent — system inventory collection |
-| [facter-grpc](https://github.com/klamhq/facter-grpc) | Go gRPC server — inventory ingest and graph storage |
-| [facter-api](https://github.com/klamhq/facter-api) | Go GraphQL API — query interface |
-| [facter-rule-engine](https://github.com/klamhq/facter-rule-engine) | Go compliance rule engine |
-| [facter-ui](https://github.com/klamhq/facter-ui) | Vue 3 / Quasar web dashboard |
-| [facter-schema](https://github.com/klamhq/facter-schema) | Shared protobuf schema |
+| Repository                                                         | Description                                         |
+| ------------------------------------------------------------------ | --------------------------------------------------- |
+| [facter-oss](https://github.com/klamhq/facter-oss)                 | Go agent — system inventory collection              |
+| [facter-grpc](https://github.com/klamhq/facter-grpc)               | Go gRPC server — inventory ingest and graph storage |
+| [facter-api](https://github.com/klamhq/facter-api)                 | Go GraphQL API — query interface                    |
+| [facter-rule-engine](https://github.com/klamhq/facter-rule-engine) | Go compliance rule engine                           |
+| [facter-ui](https://github.com/klamhq/facter-ui)                   | Vue 3 / Quasar web dashboard                        |
+| [facter-schema](https://github.com/klamhq/facter-schema)           | Shared protobuf schema                              |
 
 ---
 
@@ -30,23 +30,23 @@ All commits must follow [Conventional Commits](https://www.conventionalcommits.o
 
 ### Types
 
-| Type | When to use |
-|---|---|
-| `feat` | New feature |
-| `fix` | Bug fix |
-| `chore` | Tooling, dependencies, config |
-| `docs` | Documentation only |
-| `test` | Adding or fixing tests |
+| Type       | When to use                        |
+| ---------- | ---------------------------------- |
+| `feat`     | New feature                        |
+| `fix`      | Bug fix                            |
+| `chore`    | Tooling, dependencies, config      |
+| `docs`     | Documentation only                 |
+| `test`     | Adding or fixing tests             |
 | `refactor` | Code change without feature or fix |
-| `perf` | Performance improvement |
-| `ci` | CI/CD pipeline changes |
+| `perf`     | Performance improvement            |
+| `ci`       | CI/CD pipeline changes             |
 
 ### Version bump rules
 
-| Commit type | Version bump |
-|---|---|
-| `fix` | patch (1.0.x) |
-| `feat` | minor (1.x.0) |
+| Commit type                            | Version bump  |
+| -------------------------------------- | ------------- |
+| `fix`                                  | patch (1.0.x) |
+| `feat`                                 | minor (1.x.0) |
 | `feat!` or `BREAKING CHANGE` in footer | major (x.0.0) |
 
 ### Examples

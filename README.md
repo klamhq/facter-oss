@@ -6,7 +6,7 @@
 
 Lightweight Go agent that collects system inventory facts (packages, processes, users, networks, SSH keys, Docker containers, etc.) and exports them as protobuf messages — either to a local file or to [facter-grpc](https://github.com/klamhq/facter-grpc) via mTLS gRPC.
 
-📖 **[Full documentation](https://klamhq.github.io/facter-oss)**
+📖 **[Full documentation](https://klamhq.github.io/facter)**
 
 ---
 
