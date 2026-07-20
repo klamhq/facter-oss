@@ -14,13 +14,13 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
+	"google.golang.org/grpc/status"
 )
 
 func callInventory(client schema.FactGrpcServiceClient, message *schema.InventoryRequest, logger *logrus.Logger) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
-	// b, _ := protojson.MarshalOptions{Indent: "  "}.Marshal(message)
-	// logger.Debugf("sending proto: %s", string(b))
+
 	resp, err := client.Inventory(ctx, message)
 	if err != nil {
 		st, ok := status.FromError(err)
