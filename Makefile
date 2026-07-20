@@ -7,14 +7,6 @@ VERBOSE := -x -v
 
 .PHONY: all
 
-mkdocs-install:
-	python3 -m venv venv/
-	source venv/bin/activate
-	pip3 install mkdocs
-	pip3 install mkdocs-material
-	python3 -m pip freeze > requirements.txt
-	
-
 build:
 	@mkdir -p ${OUTPUT}
 	${BUILD_ENV} go build -mod vendor ${BUILD_FLAGS} -o ${OUTPUT}/ ./...
