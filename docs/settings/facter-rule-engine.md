@@ -41,7 +41,8 @@ facterRuleEngine:
     certificatePath: "./certs/facter_rule_engine_cert.pem"
     certificateKeyPath: "./certs/facter_rule_engine_key.pem"
     caPath: "./certs/ca_cert.pem"
-    sslHostname: "grpc.example.com"           # TLS SNI hostname for facter-grpc
+    sslHostname: "grpc.example.com"           # TLS SNI hostname for facter-grpc (optional, defaults to serverHost)
+    insecureSkipTlsVerify: false              # Disable TLS verification — never use in production
     healthCheckInterval: 30s                  # gRPC health monitoring interval
 ```
 
@@ -83,12 +84,13 @@ Format: `postgres://user:password@host:port/dbname`
 
 ### `facterGrpc`
 
-| Key                   | Type     | Description                               |
-| --------------------- | -------- | ----------------------------------------- |
-| `serverHost`          | string   | `facter-grpc` host                        |
-| `serverPort`          | string   | `facter-grpc` port (default: `56230`)     |
-| `certificatePath`     | string   | Client certificate for mTLS               |
-| `certificateKeyPath`  | string   | Client private key for mTLS               |
-| `caPath`              | string   | CA certificate                            |
-| `sslHostname`         | string   | TLS SNI hostname                          |
-| `healthCheckInterval` | duration | How often to check gRPC connection health |
+| Key                     | Type     | Default        | Description                                                                     |
+| ----------------------- | -------- | -------------- | ------------------------------------------------------------------------------- |
+| `serverHost`            | string   |                | `facter-grpc` host                                                              |
+| `serverPort`            | string   | `56230`        | `facter-grpc` port                                                              |
+| `certificatePath`       | string   |                | Client certificate for mTLS                                                     |
+| `certificateKeyPath`    | string   |                | Client private key for mTLS                                                     |
+| `caPath`                | string   |                | CA certificate                                                                  |
+| `sslHostname`           | string   | *(serverHost)* | TLS SNI hostname (must match server certificate CN/SAN). Defaults to serverHost |
+| `insecureSkipTlsVerify` | bool     | `false`        | Skip TLS certificate verification. **Never enable in production.**              |
+| `healthCheckInterval`   | duration |                | How often to check gRPC connection health                                       |

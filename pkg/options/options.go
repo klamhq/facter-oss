@@ -128,12 +128,13 @@ type OutputOptions struct {
 
 // FacterServerOptions contains the options for facterServer data upload from client
 type FacterServerOptions struct {
-	ServerHost         string `yaml:"serverHost"`
-	ServerPort         string `yaml:"serverPort"`
-	CertificatePath    string `yaml:"certificatePath"`
-	CertificateKeyPath string `yaml:"certificateKeyPath"`
-	CaPath             string `yaml:"caPath"`
-	SSLHostname        string `yaml:"sslHostname"`
+	ServerHost            string `yaml:"serverHost"`
+	ServerPort            string `yaml:"serverPort"`
+	CertificatePath       string `yaml:"certificatePath"`
+	CertificateKeyPath    string `yaml:"certificateKeyPath"`
+	CaPath                string `yaml:"caPath"`
+	SSLHostname           string `yaml:"sslHostname"`
+	InsecureSkipTLSVerify bool   `yaml:"insecureSkipTlsVerify"`
 }
 
 // PackagesOptions contains the options for fetch installed package

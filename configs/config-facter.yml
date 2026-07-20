@@ -19,6 +19,7 @@ facter:
         certificateKeyPath: ""
         caPath: ""
         sslHostname: "test.facter.fr"
+        insecureSkipTlsVerify: false
   inventory:
     applications:
       enabled: true

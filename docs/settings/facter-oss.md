@@ -31,7 +31,8 @@ facter:
         certificatePath: "./certs/facter_cert.pem"
         certificateKeyPath: "./certs/facter_key.pem"
         caPath: "./certs/ca_cert.pem"
-        sslHostname: "grpc.example.com"   # TLS SNI hostname
+        sslHostname: "grpc.example.com"         # TLS SNI hostname (optional, defaults to serverHost)
+        insecureSkipTlsVerify: false             # Disable TLS verification — never use in production
 
   inventory:
 
@@ -112,14 +113,15 @@ facter:
 
 ### `sink.output.facterServer`
 
-| Key                  | Type   | Description                                             |
-| -------------------- | ------ | ------------------------------------------------------- |
-| `serverHost`         | string | `facter-grpc` hostname or IP                            |
-| `serverPort`         | string | `facter-grpc` gRPC port (default: `56230`)              |
-| `certificatePath`    | string | Path to client certificate                              |
-| `certificateKeyPath` | string | Path to client private key                              |
-| `caPath`             | string | Path to CA certificate                                  |
-| `sslHostname`        | string | TLS SNI hostname (must match server certificate CN/SAN) |
+| Key                     | Type   | Default        | Description                                                                     |
+| ----------------------- | ------ | -------------- | ------------------------------------------------------------------------------- |
+| `serverHost`            | string |                | `facter-grpc` hostname or IP                                                    |
+| `serverPort`            | string | `56230`        | `facter-grpc` gRPC port                                                         |
+| `certificatePath`       | string |                | Path to client certificate                                                      |
+| `certificateKeyPath`    | string |                | Path to client private key                                                      |
+| `caPath`                | string |                | Path to CA certificate                                                          |
+| `sslHostname`           | string | *(serverHost)* | TLS SNI hostname (must match server certificate CN/SAN). Defaults to serverHost |
+| `insecureSkipTlsVerify` | bool   | `false`        | Skip TLS certificate verification. **Never enable in production.**              |
 
 ### `store`
 

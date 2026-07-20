@@ -54,10 +54,16 @@ func sendOverGrpc(cfg *options.FacterServerOptions, inventory *schema.InventoryR
 		return err
 	}
 
+	sniHostname := cfg.SSLHostname
+	if sniHostname == "" {
+		sniHostname = cfg.ServerHost
+	}
+
 	tlsConfig := &tls.Config{
-		ServerName:   cfg.SSLHostname,
-		Certificates: []tls.Certificate{cert},
-		RootCAs:      ca,
+		ServerName:         sniHostname,
+		Certificates:       []tls.Certificate{cert},
+		RootCAs:            ca,
+		InsecureSkipVerify: cfg.InsecureSkipTLSVerify, // #nosec G402
 	}
 
 	conn, err := grpc.NewClient(fmt.Sprintf("%s:%s", cfg.ServerHost, cfg.ServerPort), grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)))
