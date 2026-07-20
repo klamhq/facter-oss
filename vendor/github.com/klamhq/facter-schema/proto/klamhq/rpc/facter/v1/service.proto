@@ -514,15 +514,74 @@ message Logger {}
 /** Configuration message (reserved). */
 message Cfg {}
 
-/** Response message for gRPC services. */
+/** Response message for Inventory services. */
 message InventoryResponse {
   string message = 1; /** Response message text. */
 }
 
 /**
- * gRPC service definition for sending host information.
+ * Represents the rule executed and matched by rule engine
+ */
+message AuditRecord {
+  string rule_id = 1;
+  string name = 2;
+  string description = 3;
+  string evidence = 4;
+  int64 created_at = 5;
+  bool matched = 6;
+  string category = 7;
+  string severity = 8;
+  string seed = 9;
+  string seed_property = 10;
+  string seed_value = 11;
+  bool compliant = 12;
+}
+
+/**
+ * Represents the rule executed and matched by rule engine
+ */
+message AuditRecordRequest {
+  repeated AuditRecord audit_record = 1;
+}
+
+message AuditRecordResponse {
+  string message = 1; /** Response message text. */
+}
+
+/**
+ * Represents the cypher templates and the rules to be executed
+ */
+message CheckRuleQuery {
+  string cypher = 1;
+  string rule_id = 2;
+}
+
+/**
+ * Represents the results of the cypher query
+ */
+message CheckRuleResult {
+  string rule_id = 1;
+  string error = 2;
+  repeated string rows_json = 3; // JSON strings instead of Struct
+}
+
+/**
+ * Represents all cypher rules to be checked
+ */
+message CheckRulesRequest {
+  repeated CheckRuleQuery queries = 1;
+}
+
+message CheckRulesResponse {
+  repeated CheckRuleResult results = 1;
+}
+
+/**
+ * gRPC service definition.
  */
 service FactGrpcService {
   /** Sends the Inventory message and receives a Response. */
   rpc Inventory(InventoryRequest) returns (InventoryResponse); /** Sends the Inventory message and receives a Response. */
+  rpc AuditRecord(AuditRecordRequest) returns (AuditRecordResponse); /**Send the audit record request from rule engine. */
+  rpc CheckRules(CheckRulesRequest) returns (CheckRulesResponse); /**Send cypher audit query and return result. */
 }

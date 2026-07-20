@@ -60,10 +60,19 @@ func (c *PlatformCollectorImpl) CollectPlatform(ctx context.Context) (*schema.Pl
 
 	// Virtualization
 	if c.cfg.Virtualization.Enabled {
-		p.Virtualization = &schema.Virtualization{
-			System: c.systemGather.Host.VirtualizationSystem,
-			Role:   c.systemGather.Host.VirtualizationRole,
+		if c.systemGather.Host.VirtualizationSystem != "" && c.systemGather.Host.VirtualizationRole != "" {
+			p.Virtualization = &schema.Virtualization{
+				System: c.systemGather.Host.VirtualizationSystem,
+				Role:   c.systemGather.Host.VirtualizationRole,
+			}
+		} else {
+			c.log.Info("No virtualization detected")
+			p.Virtualization = &schema.Virtualization{
+				System: "none",
+				Role:   "none",
+			}
 		}
+
 	}
 
 	// Identifier

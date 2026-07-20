@@ -313,6 +313,7 @@ func (b *Builder) ManageDelta(fullInventory *schema.HostInventory) (*schema.Inve
 		result = &schema.InventoryRequest{
 			Content: &schema.InventoryRequest_Full{Full: fullInventory},
 		}
+		//b.Log.Debugf("Send this full inventory %s", fullInventory)
 		return result, fullInventory
 	} else {
 		b.Log.Info("Previous inventory found, computing delta")
@@ -325,7 +326,7 @@ func (b *Builder) ManageDelta(fullInventory *schema.HostInventory) (*schema.Inve
 		result = &schema.InventoryRequest{
 			Content: &schema.InventoryRequest_Delta{Delta: delta},
 		}
-		b.Log.Debugf("Send this delta %s", result)
+		//b.Log.Debugf("Send this delta %s", result)
 		return result, fullInventory
 	}
 }
