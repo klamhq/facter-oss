@@ -35,3 +35,4 @@ jobs:
       - name: Build & publish docs with mike
         run: |
           mike deploy --push --update-aliases --remote origin --branch gh-pages develop
+          mike set-default --push --remote origin --branch gh-pages develop
