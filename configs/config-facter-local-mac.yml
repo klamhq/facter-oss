@@ -22,13 +22,13 @@ facter:
         sslHostname: "grpc.test.facter.fr"
   inventory:
     applications:
-      enabled: true
+      enabled: false
       docker:
         enabled: true
     systemdService:
-      enabled: true
+      enabled: false
     networks:
-      enabled: true
+      enabled: false
       geoIp:
         enabled: true
         timeout: 10
@@ -59,13 +59,13 @@ facter:
       kernel:
         enabled: true
     packages:
-      enabled: true
+      enabled: false
     process:
-      enabled: true
+      enabled: false
     ssh:
-      enabled: true
+      enabled: false
     user:
-      enabled: true
+      enabled: false
       passwdFile: "/etc/passwd"
   compliance:
     enabled: true

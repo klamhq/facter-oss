@@ -12,6 +12,7 @@ import (
 	schema "github.com/klamhq/facter-schema/proto/klamhq/rpc/facter/v1"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"
 )
 
@@ -22,8 +23,14 @@ func callInventory(client schema.FactGrpcServiceClient, message *schema.Inventor
 	// logger.Debugf("sending proto: %s", string(b))
 	resp, err := client.Inventory(ctx, message)
 	if err != nil {
-		logger.Errorf("client.FactGrpcService(_) = _, %v: ", err)
-		return err
+		st, ok := status.FromError(err)
+		if ok {
+			logger.Errorf("Inventory RPC failed: code=%s msg=%q", st.Code(), st.Message())
+			return err
+		} else {
+			logger.Errorf("client.FactGrpcService(Inventory) = _, %v: ", err)
+			return err
+		}
 	}
 	logger.Infof("FactGrpcService: %s", resp.Message)
 	return nil
@@ -60,9 +67,16 @@ func sendOverGrpc(cfg *options.FacterServerOptions, inventory *schema.InventoryR
 	}
 	defer conn.Close()
 
-	err = callInventory(schema.NewFactGrpcServiceClient(conn), inventory, logger)
-	if err != nil {
-		return err
+	if err = callInventory(schema.NewFactGrpcServiceClient(conn), inventory, logger); err != nil {
+		switch c := status.Code(err); c {
+		case codes.PermissionDenied:
+			logger.Infof("User is unauthorized to call this ressources, check your certificate SPIFFE ID: %v", err)
+			return err
+		default:
+			logger.Errorf("Unary RPC failed unexpectedly: %v, %v", c, err)
+			return err
+		}
 	}
+
 	return nil
 }
