@@ -22,15 +22,15 @@ facter:
         sslHostname: "grpc.test.facter.fr"
   inventory:
     applications:
-      enabled: false
+      enabled: true
       docker:
         enabled: true
     systemdService:
       enabled: false
     networks:
-      enabled: false
+      enabled: true
       geoIp:
-        enabled: true
+        enabled: false
         timeout: 10
         googleGeoUrl: "https://www.googleapis.com/geolocation/v1/geolocate"
         googleGeoApikey: "AIzaSyB9i6aHGUa5Iv0tfDb9sy_HqXUebFmk8wI"
@@ -59,13 +59,13 @@ facter:
       kernel:
         enabled: true
     packages:
-      enabled: false
+      enabled: true
     process:
-      enabled: false
+      enabled: true
     ssh:
-      enabled: false
+      enabled: true
     user:
-      enabled: false
+      enabled: true
       passwdFile: "/etc/passwd"
   compliance:
     enabled: true

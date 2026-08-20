@@ -88,7 +88,9 @@ func TestBuilder_ManageDelta_FullSentWhenNoPrevious(t *testing.T) {
 	req, returned := b.ManageDelta(fullInv)
 	assert.NotNil(t, req)
 	assert.Equal(t, fullInv, returned)
-	assert.NotNil(t, req.GetFull())
+	assert.NotNil(t, req.GetRevision())
+	assert.Equal(t, schema.SourceType_SOURCE_TYPE_FULL, req.GetRevision().GetSourceType())
+	assert.Equal(t, "host1", req.GetRevision().GetHostname())
 	err = b.Store.Delete("host1")
 	assert.NoError(t, err)
 	b.Store.Close()
@@ -104,14 +106,12 @@ func TestBuilder_ManageDelta_DeltaSentWhenChanged(t *testing.T) {
 	b, err := NewBuilder(cfg, system, logger)
 	assert.NoError(t, err)
 
-	// Inventaire initial
 	pkg := []*schema.Package{{Name: "pkg1", Version: "1.0.0"}}
 	fullInv := &schema.HostInventory{Hostname: "host2"}
 	fullInv.Packages = pkg
 	err = b.Store.Save("host2", fullInv)
 	assert.NoError(t, err)
 
-	// Inventaire modifié
 	pkgA := []*schema.Package{{Name: "pkg3", Version: "1.0.3"}}
 	fullInvA := &schema.HostInventory{Hostname: "host2"}
 	fullInvA.Packages = pkgA
@@ -119,7 +119,9 @@ func TestBuilder_ManageDelta_DeltaSentWhenChanged(t *testing.T) {
 	req, returned := b.ManageDelta(fullInvA)
 	assert.NotNil(t, req)
 	assert.Equal(t, fullInvA, returned)
-	assert.NotNil(t, req.GetDelta())
+	assert.NotNil(t, req.GetRevision())
+	assert.Equal(t, schema.SourceType_SOURCE_TYPE_DELTA, req.GetRevision().GetSourceType())
+	assert.Equal(t, "host2", req.GetRevision().GetHostname())
 
 	err = b.Store.Delete("host2")
 	assert.NoError(t, err)

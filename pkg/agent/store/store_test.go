@@ -82,6 +82,31 @@ func TestCloseStore(t *testing.T) {
 	assert.NoError(t, err)
 }
 
+func TestSaveRevision_IdempotentByRevisionID(t *testing.T) {
+	path := path.Join(t.TempDir(), "revisions.db")
+	store, err := NewBoltInventoryStore(path)
+	assert.NoError(t, err)
+
+	rev := &schema.InventoryRevisionEnvelope{
+		RevisionId:         "rev-1",
+		Sequence:           1,
+		PreviousRevisionId: "",
+		PreviousSequence:   0,
+		Hostname:           "test-host",
+		SourceType:         schema.SourceType_SOURCE_TYPE_FULL,
+		StateHash:          "abc123",
+		Payload:            &schema.InventoryRevisionEnvelope_Full{Full: &schema.HostInventory{Hostname: "test-host"}},
+	}
+
+	assert.NoError(t, store.SaveRevision("test-host", rev))
+	assert.NoError(t, store.SaveRevision("test-host", rev))
+
+	got, err := store.GetRevision("test-host")
+	assert.NoError(t, err)
+	assert.Equal(t, "rev-1", got.RevisionId)
+	assert.EqualValues(t, 1, got.Sequence)
+}
+
 func TestCloseNilStore(t *testing.T) {
 	var store *boltInventoryStore
 	err := store.Close()

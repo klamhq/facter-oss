@@ -33,6 +33,17 @@ func TestGetHostnameFromInventory_Delta(t *testing.T) {
 	assert.Equal(t, expected, got, "Hostnames should match")
 }
 
+func TestGetHostnameFromInventory_Revision(t *testing.T) {
+	expected := "host-revision"
+	inv := &schema.InventoryRequest{
+		Content: &schema.InventoryRequest_Revision{
+			Revision: &schema.InventoryRevisionEnvelope{Hostname: expected},
+		},
+	}
+	got := GetHostnameFromInventory(inv)
+	assert.Equal(t, expected, got, "Hostnames should match")
+}
+
 func TestGetHostnameFromInventory_UnknownType(t *testing.T) {
 	inv := &schema.InventoryRequest{
 		Content: nil,

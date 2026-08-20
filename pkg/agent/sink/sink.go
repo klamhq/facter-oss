@@ -28,9 +28,13 @@ func SinkInventory(cfg *options.RunOptions, logger *logrus.Logger, store store.I
 	if err != nil {
 		errStore := store.Delete(hostname)
 		if errStore != nil {
-			logger.WithError(errStore).Error("Failed te delete inventory store")
+			logger.WithError(errStore).Error("Failed to delete inventory store")
 		}
-		logger.Warnf("Deleted snapshot for host %s due to failed send", hostname)
+		errRevision := store.DeleteRevision(hostname)
+		if errRevision != nil {
+			logger.WithError(errRevision).Error("Failed to delete revision metadata store")
+		}
+		logger.Warnf("Deleted snapshot and revision metadata for host %s due to failed send", hostname)
 		return err
 	}
 

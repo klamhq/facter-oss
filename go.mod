@@ -2,6 +2,8 @@ module github.com/klamhq/facter-oss
 
 go 1.25.6
 
+replace github.com/klamhq/facter-schema => /Users/klenglet/git/klamhq/facter-schema
+
 require (
 	github.com/cespare/xxhash v1.1.0
 	github.com/coreos/go-iptables v0.8.0
