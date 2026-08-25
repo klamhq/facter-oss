@@ -16,4 +16,3 @@
 - [ ] Tests pass (`make test`)
 - [ ] Lint passes (`make golint` / `npm run lint`)
 - [ ] Documentation updated if needed
-- [ ] `RELATIONS.md` updated if a new collector or graph relationship was added
