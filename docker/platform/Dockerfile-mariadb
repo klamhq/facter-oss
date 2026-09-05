@@ -1,0 +1,33 @@
+FROM mariadb:11.8
+
+RUN apt update && apt upgrade -y && \
+    apt install -y sudo ssg-debderived openssh-client openssh-server \
+    gcc make curl netcat-openbsd && \
+    mkdir -p /root/.ssh
+
+RUN ssh-keygen -q -C "istia@comment" -t rsa -N '' -f /root/.ssh/id_rsa && \
+    cat /root/.ssh/id_rsa.pub >> /root/.ssh/authorized_keys && \
+    ssh-keygen -q -b 4096 -C "istiaOther@comment" -t rsa -N '' -f /root/.ssh/id_rsa_other && \
+    cat /root/.ssh/id_rsa_other.pub >> /root/.ssh/authorized_keys && \
+    ssh-keygen -b 256 -q -C "ecdsa@comment" -t ecdsa -N '' -f /root/.ssh/id_ecdsa_other && \
+    cat /root/.ssh/id_ecdsa_other.pub >> /root/.ssh/authorized_keys
+
+ENV GO_VERSION=1.25.6
+RUN curl -L https://golang.org/dl/go${GO_VERSION}.linux-amd64.tar.gz -o go.tar.gz && \
+    tar -C /usr/local -xzf go.tar.gz && \
+    rm -f go.tar.gz
+ENV PATH=/usr/local/go/bin:$PATH
+ENV GOROOT=/usr/local/go
+
+WORKDIR /tmp/facter
+COPY . /tmp/facter
+RUN make build && \
+    cp bin/facter-oss /usr/local/bin/ && \
+    chmod +x /usr/local/bin/facter-oss
+
+RUN curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | \
+    sh -s -- -b /usr/local/bin v0.69.3
+
+EXPOSE 3306 33060
+
+USER root

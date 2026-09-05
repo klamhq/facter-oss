@@ -50,7 +50,7 @@ test-docker-rocky8:
 	docker run --name rockylinux8 -h rockylinux8 --rm -v $(CURDIR)/:/tmp/facter rockylinux8:test
 
 test-docker-ubuntu:
-	docker run --name ubuntu -h ubuntu --rm -v $(CURDIR)/:/tmp/facter ubuntu:test
+	docker run --name ubuntu -h ubuntu --rm  ubuntu:test
 
 test-docker-rocky:
 	docker run --name rockylinux -h rockylinux --rm -v $(CURDIR)/:/tmp/facter rockylinux:test

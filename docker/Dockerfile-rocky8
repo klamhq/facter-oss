@@ -11,7 +11,7 @@ RUN ssh-keygen -b 256 -q -C "ecdsa@comment"  -t ecdsa -N '' -f /root/.ssh/id_ecd
 RUN cat /root/.ssh/id_ecdsa_other.pub >> /root/.ssh/authorized_keys
 
 RUN yum install gcc make sudo scap-security-guide -y 
-ENV GO_VERSION 1.24.3
+ENV GO_VERSION 1.25.6
 RUN curl -L https://golang.org/dl/go$GO_VERSION.linux-amd64.tar.gz -o go$GO_VERSION.linux-amd64.tar.gz && tar -C /usr/local -xzf go$GO_VERSION.linux-amd64.tar.gz && rm -f go$GO_VERSION.linux-amd64.tar.gz
 ENV PATH /usr/local/go/bin:$PATH
 ENV GOROOT /usr/local/go

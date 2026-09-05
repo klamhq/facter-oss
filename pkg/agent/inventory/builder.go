@@ -365,11 +365,11 @@ func (b *Builder) ManageDelta(fullInventory *schema.HostInventory) (*schema.Inve
 
 	b.Log.Info("Previous inventory found, computing delta")
 	delta := ComputeDelta(previous, fullInventory, b.Log)
+	delta.UpdatedAt = time.Now().UTC().Format(time.RFC3339)
 	if IsDeltaEmpty(delta) {
-		b.Log.Info("No changes detected, nothing to send")
-		return nil, nil
+		b.Log.Info("No inventory changes detected, sending freshness heartbeat")
+		return &schema.InventoryRequest{Content: &schema.InventoryRequest_Delta{Delta: delta}}, fullInventory
 	}
-	delta.UpdatedAt = time.Now().Format(time.RFC3339)
 	revision := b.buildRevisionEnvelope(fullInventory, delta, previousRevision)
 	if saveErr := b.Store.SaveRevision(fullInventory.Hostname, revision); saveErr != nil {
 		b.Log.WithError(saveErr).Error("Failed to persist revision metadata")

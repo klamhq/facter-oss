@@ -128,7 +128,7 @@ func TestBuilder_ManageDelta_DeltaSentWhenChanged(t *testing.T) {
 	b.Store.Close()
 }
 
-func TestBuilder_ManageDelta_NoDeltaSentWhenNoChange(t *testing.T) {
+func TestBuilder_ManageDelta_SendsFreshnessHeartbeatWhenNoChange(t *testing.T) {
 	cfg := options.RunOptions{}
 	cfg.Facter.Store.Path = "/tmp/store"
 	system := &models.System{}
@@ -147,8 +147,11 @@ func TestBuilder_ManageDelta_NoDeltaSentWhenNoChange(t *testing.T) {
 
 	// Appelle ManageDelta avec le même inventaire
 	req, returned := b.ManageDelta(fullInv)
-	assert.Nil(t, req)
-	assert.Nil(t, returned)
+	assert.NotNil(t, req)
+	assert.Equal(t, fullInv, returned)
+	assert.NotNil(t, req.GetDelta())
+	assert.NotEmpty(t, req.GetDelta().GetUpdatedAt())
+	assert.True(t, IsDeltaEmpty(req.GetDelta()))
 
 	err = b.Store.Delete("host3")
 	assert.NoError(t, err)

@@ -182,6 +182,7 @@ type PortsOptions struct {
 type ComplianceOptions struct {
 	Enabled    bool   `yaml:"enabled"`
 	Profile    string `yaml:"profile"`
+	DataStream string `yaml:"dataStream"`
 	ResultFile string `yaml:"resultFile"`
 }
 

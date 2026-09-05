@@ -59,6 +59,7 @@ func (c *ComplianceCollectorImpl) CollectCompliance(ctx context.Context) (*schem
 		}
 		complianceReport.RuleResults = append(complianceReport.RuleResults, ruleCheckResult)
 	}
+	c.log.Debugf("found %d compliance rules reports", len(complianceReport.RuleResults))
 
 	return complianceReport, nil
 }

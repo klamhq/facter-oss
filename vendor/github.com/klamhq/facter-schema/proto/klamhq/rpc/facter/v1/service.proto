@@ -26,27 +26,37 @@ message HostInventory {
   string created_at = 16; /** Creation date of the inventory. */
 }
 
+/**
+ * Represents the delta inventory of a host, containing only changes since the last inventory.
+ */
 message HostDeltaInventory {
   string hostname = 1;
   repeated Package packages_added = 2; /** Packages added. */
   repeated Package packages_removed = 3; /** Packages removed. */
-  repeated User users_added = 4; /** Users added. */
-  repeated User users_removed = 5; /** Users removed. */
-  repeated Application applications_added = 6; /** Applications added. */
-  repeated Application applications_removed = 7; /** Applications removed. */
-  repeated SystemdService systemdservices_added = 8; /** Systemd services added. */
-  repeated SystemdService systemdservices_removed = 9; /** Systemd services removed. */
-  repeated KnownHost knownhosts_added = 10; /** Known hosts added. */
-  repeated KnownHost knownhosts_removed = 11; /** Known hosts removed. */
-  repeated SshKeyAccess sshkeyaccess_added = 12; /** SSH key access added. */
-  repeated SshKeyAccess sshkeyaccess_removed = 13; /** SSH key access removed. */
-  string updated_at = 14; /** Last update date of the delta inventory. */
-  repeated SshKeyInfo sshkeyinfo_added = 15; /** SSH key info added. */
-  repeated SshKeyInfo sshkeyinfo_removed = 16; /** SSH key info removed. */
-  Platform platform = 17; /** Platform details. */
-  Network network = 18; /** Network information. */
-  repeated Process processes_added = 19; /** List of processes running on the host. */
-  repeated Process processes_removed = 20; /** List of processes removed from the host. */
+  repeated Package packages_changed = 4; /** Packages changed. */
+  repeated User users_added = 5; /** Users added. */
+  repeated User users_removed = 6; /** Users removed. */
+  repeated User users_changed = 7; /** Users changed. */
+  DockerDelta docker_delta = 8; /** Docker application delta with granular container/image/network changes. */
+  VulnerabilityDelta vulnerability_delta = 9; /** Vulnerability report delta with granular changes. */
+  repeated SystemdService systemdservices_added = 10; /** Systemd services added. */
+  repeated SystemdService systemdservices_removed = 11; /** Systemd services removed. */
+  repeated SystemdService systemdservices_changed = 12; /** Systemd services changed. */
+  repeated KnownHost knownhosts_added = 13; /** Known hosts added. */
+  repeated KnownHost knownhosts_removed = 14; /** Known hosts removed. */
+  repeated KnownHost knownhosts_changed = 15; /** Known hosts changed. */
+  repeated SshKeyAccess sshkeyaccess_added = 16; /** SSH key access added. */
+  repeated SshKeyAccess sshkeyaccess_removed = 17; /** SSH key access removed. */
+  string updated_at = 18; /** Last update date of the delta inventory. */
+  repeated SshKeyInfo sshkeyinfo_added = 19; /** SSH key info added. */
+  repeated SshKeyInfo sshkeyinfo_removed = 20; /** SSH key info removed. */
+  repeated SshKeyInfo sshkeyinfo_changed = 21; /** SSH key info changed. */
+  Platform platform = 22; /** Platform details. */
+  Network network = 23; /** Network information. */
+  repeated Process processes_added = 24; /** List of processes running on the host. */
+  repeated Process processes_removed = 25; /** List of processes removed from the host. */
+  repeated Process processes_changed = 26; /** List of processes changed on the host. */
+  ComplianceReportDelta compliance_report_delta = 27; /** Compliance report delta with granular changes. */
 }
 
 enum SourceType {
@@ -104,7 +114,7 @@ message SystemdService {
   string name = 1; /** Service name. */
   string description = 2; /** Service description. */
   string loaded = 3; /** Loaded state. */
-  string active = 4; /** Active state. */
+  string active_state = 4; /** Active state. */
   string sub_state = 5; /** Sub-state. */
   bool enabled = 6; /** Whether the service is enabled. */
   int64 pid = 7; /** Process ID. */
@@ -437,6 +447,21 @@ message DockerNetworks {
   string updated_at = 6; /** Last update date of the docker networks information. */
 }
 
+/**
+ * Docker delta containing granular changes to containers, images, and networks.
+ */
+message DockerDelta {
+  repeated Containers containers_added = 1; /** Docker containers added. */
+  repeated Containers containers_removed = 2; /** Docker containers removed. */
+  repeated Containers containers_changed = 3; /** Docker containers changed. */
+  repeated ContainersImages images_added = 4; /** Docker images added. */
+  repeated ContainersImages images_removed = 5; /** Docker images removed. */
+  repeated ContainersImages images_changed = 6; /** Docker images changed. */
+  repeated DockerNetworks networks_added = 7; /** Docker networks added. */
+  repeated DockerNetworks networks_removed = 8; /** Docker networks removed. */
+  repeated DockerNetworks networks_changed = 9; /** Docker networks changed. */
+}
+
 message Firewall {
   string version = 1;
   repeated FirewallRule rules = 2;
@@ -506,6 +531,15 @@ message VulnerabilityReport {
   repeated PackageVulnMatch matches = 1; /** List of package vulnerability matches. */
 }
 
+/**
+ * Vulnerability delta containing granular changes to vulnerability matches.
+ */
+message VulnerabilityDelta {
+  repeated PackageVulnMatch matches_added = 1; /** Vulnerability matches added. */
+  repeated PackageVulnMatch matches_removed = 2; /** Vulnerability matches removed. */
+  repeated PackageVulnMatch matches_changed = 3; /** Vulnerability matches changed. */
+}
+
 /** Represents a compliance report. */
 message ComplianceReport {
   Score score = 1; /** Overall compliance score. */
@@ -529,6 +563,17 @@ message RuleCheckResult {
   string result = 5; /** Result of the rule check (e.g., pass, fail). */
   string fix = 6; /** Suggested fix for the rule, if applicable. */
   string updated_at = 7; /** Last update date of the rule check information. */
+}
+
+/**
+ * Represents the delta of a compliance report.
+ */
+message ComplianceReportDelta {
+  repeated RuleCheckResult rules_added = 1; /** Rules added. */
+  repeated RuleCheckResult rules_removed = 2; /** Rules removed. */
+  repeated RuleCheckResult rules_changed = 3; /** Rules changed. */
+  Score score_delta = 4; /** Score delta. */
+  string profile = 5; /** Compliance profile used. */
 }
 
 /**

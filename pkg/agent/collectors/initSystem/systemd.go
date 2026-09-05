@@ -80,7 +80,7 @@ func getServiceDetails(name string) (*models.SystemdService, error) {
 		case "LoadState":
 			service.Loaded = val
 		case "ActiveState":
-			service.Active = val
+			service.ActiveState = val
 		case "SubState":
 			service.SubState = val
 		case "ExecMainPID":

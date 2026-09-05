@@ -120,6 +120,7 @@ func (c *NetworksCollectorImpl) craftConnections(networks *schema.Network) error
 	connections, err := network.Connections(c.log)
 	if err != nil {
 		c.log.Errorf("Error during crafting connections %v", err)
+		return err
 	}
 	networks.Connections = connections
 	return nil
