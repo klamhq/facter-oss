@@ -14,7 +14,7 @@ RUN yum install -y openssh scap-security-guide sudo gcc make && \
     yum clean all && rm -rf /var/cache/yum
 
 # Installer Go et nettoyer l'archive
-ENV GO_VERSION 1.25.6
+ENV GO_VERSION 1.24.3
 RUN curl -L https://golang.org/dl/go$GO_VERSION.linux-amd64.tar.gz -o /tmp/go.tar.gz && \
     tar -C /usr/local -xzf /tmp/go.tar.gz && \
     rm -f /tmp/go.tar.gz

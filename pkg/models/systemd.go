@@ -4,7 +4,7 @@ type SystemdService struct {
 	Name         string `json:"name"`
 	Description  string `json:"description"`
 	Loaded       string `json:"loaded"`
-	ActiveState  string `json:"activeState"`
+	Active       string `json:"active"`
 	SubState     string `json:"subState"`
 	Enabled      bool   `json:"enabled"`
 	PID          int64  `json:"pid"`

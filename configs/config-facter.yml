@@ -3,51 +3,34 @@ facter:
   store:
     path: "/tmp/facter-store.db"
   logs:
-    debugMode: true
+    debugMode: false
   performanceProfiling:
     enabled: false
   sink:
     output:
       format: "proto"
-      type: "remote"  # local or remote
+      type: "file"  # local or remote
       outputDirectory: "/tmp"
       outputFilename: "export.iya"
       facterServer: # use it if output.type is remote
-        serverHost: host.docker.internal
-        #serverHost: localhost
+        serverHost: localhost
         serverPort: "56230"
-        certificatePath: "./certs/facter_cert.pem"
-        certificateKeyPath: "./certs/facter_key.pem"
-        caPath: "./certs/ca_cert.pem"
-        sslHostname: "grpc.test.facter.fr"
+        certificatePath: ""
+        certificateKeyPath: ""
+        caPath: ""
+        sslHostname: "test.facter.fr"
+        insecureSkipTlsVerify: false
   inventory:
     applications:
       enabled: true
       docker:
         enabled: true
     systemdService:
-      enabled: false
-    networks:
       enabled: true
-      geoIp:
-        enabled: false
-        timeout: 10
-        googleGeoUrl: "https://www.googleapis.com/geolocation/v1/geolocate"
-        googleGeoApikey: "AIzaSyB9i6aHGUa5Iv0tfDb9sy_HqXUebFmk8wI"
-      ports:
-        enabled: true
-      publicIp:
-        enabled: true
-        publicIpApiUrl: "https://ifconfig.me/"
-        timeout: 15
-      firewall:
-        enabled: true
-      connections:
-        enabled: true
     platform:
       enabled: true
       system:
-        initCheckPath: "/proc/1/exe"
+        initCheckPath: "/sbin/init"
         machineID: "/etc/machine-id"
         machineUUID: "/sys/class/dmi/id/product_uuid"
       hardware:
@@ -67,10 +50,26 @@ facter:
     user:
       enabled: true
       passwdFile: "/etc/passwd"
+    networks:
+      enabled: true
+      geoIp:
+        enabled: true
+        timeout: 10
+        googleGeoUrl: "https://www.googleapis.com/geolocation/v1/geolocate"
+        googleGeoApikey: "AIzaSyB9i6aHGUa5Iv0tfDb9sy_HqXUebFmk8wI"
+      ports:
+        enabled: true
+      publicIp:
+        enabled: true
+        publicIpApiUrl: "https://ifconfig.me/"
+        timeout: 15
+      firewall:
+        enabled: true
+      connections:
+        enabled: true
   compliance:
-    enabled: true
-    profile: "xccdf_org.ssgproject.content_profile_cis_server_l1"
-    dataStream: ""
+    enabled: false
+    profile: "xccdf_org.ssgproject.content_profile_cis_level1_server"
     resultFile: "/tmp/openscap-results.xml"
   vulnerabilities:
-    enabled: true
+    enabled: false

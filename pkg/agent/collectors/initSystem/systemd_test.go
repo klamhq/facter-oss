@@ -74,7 +74,7 @@ func TestGetServiceDetails(t *testing.T) {
 	assert.Equal(t, "fake.service", svc.Name)
 	assert.Equal(t, "Fake Service", svc.Description)
 	assert.Equal(t, "loaded", svc.Loaded)
-	assert.Equal(t, "active", svc.ActiveState)
+	assert.Equal(t, "active", svc.Active)
 	assert.Equal(t, "running", svc.SubState)
 	assert.Equal(t, int64(123), svc.PID)
 	assert.Equal(t, int64(4), svc.Tasks)

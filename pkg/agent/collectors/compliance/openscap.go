@@ -30,7 +30,6 @@ func collectAllRules(groups []cdf.GroupType, rules map[string]*cdf.RuleType) {
 	}
 }
 
-// GetDataStreamFile returns the default OpenSCAP data stream file path based on the operating system name and version.
 func GetDataStreamFile(osName, version string) string {
 	osName = strings.ToLower(osName)
 	// Rocky, Alma, RHEL : ssg-rl9-ds.xml, ssg-almalinux9-ds.xml
@@ -44,7 +43,7 @@ func GetDataStreamFile(osName, version string) string {
 		}[osName]
 		return fmt.Sprintf("/usr/share/xml/scap/ssg/content/ssg-%s%s-ds.xml", prefix, major)
 	}
-	// Ubuntu : ssg-ubuntu2404-ds.xml
+	// Ubuntu : ssg-ubuntu2404-ds.xml (YYMM sans point)
 	if osName == "ubuntu" {
 		versionNum := strings.ReplaceAll(version, ".", "")
 		return fmt.Sprintf("/usr/share/xml/scap/ssg/content/ssg-ubuntu%s-ds.xml", versionNum)
@@ -64,12 +63,7 @@ func GetDataStreamFile(osName, version string) string {
 
 // Oscap runs an OpenSCAP audit and collects the results.
 func Oscap(ctx context.Context, cfg *options.ComplianceOptions, operatingSystem *schema.Os, logger *logrus.Logger) (*models.ComplianceReport, error) {
-	if cfg.DataStream == "" {
-		logger.Warn("No OpenSCAP data stream specified, using default based on OS and version")
-		cfg.DataStream = GetDataStreamFile(operatingSystem.Name, operatingSystem.Version)
-	}
-	dataStreamFile := cfg.DataStream
-
+	dataStreamFile := GetDataStreamFile(operatingSystem.Name, operatingSystem.Version)
 	if cfg.Profile == "" {
 		logger.Warn("No OpenSCAP profile specified, using default 'xccdf_org.ssgproject.content_profile_cis'")
 		cfg.Profile = "xccdf_org.ssgproject.content_profile_cis"
@@ -131,13 +125,13 @@ func Oscap(ctx context.Context, cfg *options.ComplianceOptions, operatingSystem 
 				var title, description, fix string
 				if rule != nil {
 					if len(rule.Title) > 0 {
-						title = rule.Title[0].InnerXml
+						title = rule.Title[0].InnerXml // ou .Value, selon ton type
 					}
 					if len(rule.Description) > 0 {
-						description = rule.Description[0].InnerXml
+						description = rule.Description[0].InnerXml // ou .Value
 					}
 					if len(rule.Fix) > 0 {
-						fix = rule.Fix[0].InnerXml
+						fix = rule.Fix[0].InnerXml // ou .Value
 					}
 					report.RuleResults = append(report.RuleResults, models.RuleCheckResult{
 						ID:          ruleResult.Idref,
