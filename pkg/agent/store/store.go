@@ -95,12 +95,18 @@ func (b *boltInventoryStore) GetRevision(hostname string) (*schema.InventoryRevi
 	var rev schema.InventoryRevisionEnvelope
 	err := b.db.View(func(tx *bolt.Tx) error {
 		bucket := tx.Bucket([]byte(revisionBucket))
+		if bucket == nil {
+			return fmt.Errorf("revision bucket not found")
+		}
 		data := bucket.Get([]byte(hostname))
 		if data == nil {
-			return fmt.Errorf("not found")
+			return fmt.Errorf("data not found")
 		}
 		return proto.Unmarshal(data, &rev)
 	})
+	if err != nil {
+		return nil, err
+	}
 	return &rev, err
 }
 

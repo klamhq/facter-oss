@@ -350,7 +350,7 @@ func (b *Builder) buildRevisionEnvelope(fullInventory *schema.HostInventory, del
 func (b *Builder) ManageDelta(fullInventory *schema.HostInventory) (*schema.InventoryRequest, *schema.HostInventory) {
 	previous, err := b.Store.Get(fullInventory.Hostname)
 	previousRevision, prevRevErr := b.Store.GetRevision(fullInventory.Hostname)
-	if prevRevErr != nil && prevRevErr.Error() != "not found" {
+	if prevRevErr != nil {
 		b.Log.WithError(prevRevErr).Warn("Unable to load previous revision metadata")
 	}
 
