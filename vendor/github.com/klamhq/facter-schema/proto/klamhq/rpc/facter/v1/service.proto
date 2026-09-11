@@ -49,13 +49,40 @@ message HostDeltaInventory {
   repeated Process processes_removed = 20; /** List of processes removed from the host. */
 }
 
+enum SourceType {
+  SOURCE_TYPE_UNSPECIFIED = 0; /** Unspecified source type. */
+  SOURCE_TYPE_FULL = 1; /** Full snapshot of a host inventory. */
+  SOURCE_TYPE_DELTA = 2; /** Delta update applied to a previous inventory. */
+}
+
 /**
- * Represents the inventory of a host, which can be either full or delta.
+ * Represents the inventory of a host, which can be either full, delta or revision-based.
  */
 message InventoryRequest {
   oneof content {
     HostInventory full = 1; /** Full inventory of the host. */
     HostDeltaInventory delta = 2; /** Delta inventory of the host. */
+    InventoryRevisionEnvelope revision = 3; /** Append-only revision envelope. */
+  }
+}
+
+/**
+ * Revision metadata for a host inventory update.
+ */
+message InventoryRevisionEnvelope {
+  string revision_id = 1; /** Unique revision identifier. */
+  uint64 sequence = 2; /** Monotonic sequence number for the host. */
+  string previous_revision_id = 3; /** Previous revision identifier. */
+  uint64 previous_sequence = 4; /** Previous revision sequence. */
+  string created_at = 5; /** Revision creation timestamp. */
+  string agent_id = 6; /** Agent identifier that generated the revision. */
+  string hostname = 7; /** Hostname associated with the revision. */
+  string machine_id = 8; /** Machine identifier associated with the revision. */
+  SourceType source_type = 9; /** Payload type for the revision. */
+  string state_hash = 10; /** Hash used to validate the inventory state. */
+  oneof payload {
+    HostInventory full = 11; /** Full inventory payload. */
+    HostDeltaInventory delta = 12; /** Delta inventory payload. */
   }
 }
 
@@ -520,35 +547,6 @@ message InventoryResponse {
 }
 
 /**
- * Represents the rule executed and matched by rule engine
- */
-message AuditRecord {
-  string rule_id = 1;
-  string name = 2;
-  string description = 3;
-  string evidence = 4;
-  int64 created_at = 5;
-  bool matched = 6;
-  string category = 7;
-  string severity = 8;
-  string seed = 9;
-  string seed_property = 10;
-  string seed_value = 11;
-  bool compliant = 12;
-}
-
-/**
- * Represents the rule executed and matched by rule engine
- */
-message AuditRecordRequest {
-  repeated AuditRecord audit_record = 1;
-}
-
-message AuditRecordResponse {
-  string message = 1; /** Response message text. */
-}
-
-/**
  * Represents the cypher templates and the rules to be executed
  */
 message CheckRuleQuery {
@@ -582,6 +580,5 @@ message CheckRulesResponse {
 service FactGrpcService {
   /** Sends the Inventory message and receives a Response. */
   rpc Inventory(InventoryRequest) returns (InventoryResponse); /** Sends the Inventory message and receives a Response. */
-  rpc AuditRecord(AuditRecordRequest) returns (AuditRecordResponse); /**Send the audit record request from rule engine. */
   rpc CheckRules(CheckRulesRequest) returns (CheckRulesResponse); /**Send cypher audit query and return result. */
 }

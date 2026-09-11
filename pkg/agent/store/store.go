@@ -12,6 +12,9 @@ type InventoryStore interface {
 	Get(hostname string) (*schema.HostInventory, error)
 	Save(hostname string, inv *schema.HostInventory) error
 	Delete(hostname string) error
+	SaveRevision(hostname string, rev *schema.InventoryRevisionEnvelope) error
+	GetRevision(hostname string) (*schema.InventoryRevisionEnvelope, error)
+	DeleteRevision(hostname string) error
 	Close() error
 }
 
@@ -19,16 +22,21 @@ type boltInventoryStore struct {
 	db *bolt.DB
 }
 
-const inventoryBucket = "inventory"
+const (
+	inventoryBucket = "inventory"
+	revisionBucket  = "revisions"
+)
 
 func NewBoltInventoryStore(path string) (*boltInventoryStore, error) {
 	db, err := bolt.Open(path, 0600, nil)
 	if err != nil {
 		return nil, err
 	}
-	// init bucket
 	err = db.Update(func(tx *bolt.Tx) error {
-		_, err := tx.CreateBucketIfNotExists([]byte(inventoryBucket))
+		if _, err := tx.CreateBucketIfNotExists([]byte(inventoryBucket)); err != nil {
+			return err
+		}
+		_, err := tx.CreateBucketIfNotExists([]byte(revisionBucket))
 		return err
 	})
 	return &boltInventoryStore{db}, err
@@ -65,7 +73,50 @@ func (b *boltInventoryStore) Delete(hostname string) error {
 	})
 }
 
-// Close closes the BoltDB database.
+func (b *boltInventoryStore) SaveRevision(hostname string, rev *schema.InventoryRevisionEnvelope) error {
+	if rev == nil {
+		return nil
+	}
+	current, err := b.GetRevision(hostname)
+	if err == nil && current != nil && current.RevisionId == rev.RevisionId {
+		return nil
+	}
+	data, err := proto.Marshal(rev)
+	if err != nil {
+		return err
+	}
+	return b.db.Update(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(revisionBucket))
+		return bucket.Put([]byte(hostname), data)
+	})
+}
+
+func (b *boltInventoryStore) GetRevision(hostname string) (*schema.InventoryRevisionEnvelope, error) {
+	var rev schema.InventoryRevisionEnvelope
+	err := b.db.View(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(revisionBucket))
+		if bucket == nil {
+			return fmt.Errorf("revision bucket not found")
+		}
+		data := bucket.Get([]byte(hostname))
+		if data == nil {
+			return fmt.Errorf("data not found")
+		}
+		return proto.Unmarshal(data, &rev)
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &rev, err
+}
+
+func (b *boltInventoryStore) DeleteRevision(hostname string) error {
+	return b.db.Update(func(tx *bolt.Tx) error {
+		bucket := tx.Bucket([]byte(revisionBucket))
+		return bucket.Delete([]byte(hostname))
+	})
+}
+
 func (b *boltInventoryStore) Close() error {
 	if b == nil || b.db == nil {
 		return nil

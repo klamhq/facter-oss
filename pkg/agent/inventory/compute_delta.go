@@ -3,6 +3,7 @@ package inventory
 import (
 	"fmt"
 	"hash/fnv"
+	"reflect"
 	"time"
 
 	"github.com/google/go-cmp/cmp"
@@ -13,24 +14,34 @@ import (
 	"google.golang.org/protobuf/testing/protocmp"
 )
 
-// StableHash return determinist hash from protobuf message
+// StableHash returns a deterministic hash for a protobuf message.
+// It is used to detect content changes on the same logical item.
 func StableHash(msg proto.Message) uint64 {
+	if msg == nil {
+		return 0
+	}
+
 	b, _ := protojson.MarshalOptions{
-		EmitUnpopulated: true, // Inclure les champs "vides"
-		UseProtoNames:   true, // Noms proto stables
+		EmitUnpopulated: true,
+		UseProtoNames:   true,
 	}.Marshal(msg)
 
 	h := fnv.New64a()
-	h.Write(b)
+	_, _ = h.Write(b)
 	return h.Sum64()
 }
 
-// DebugProtoDiff prints the difference between two proto messages
+// DebugProtoDiff returns a readable diff for logs.
 func DebugProtoDiff(oldMsg, newMsg proto.Message) string {
+	if oldMsg == nil && newMsg == nil {
+		return "No difference"
+	}
+
 	diff := cmp.Diff(
-		oldMsg, newMsg,
-		protocmp.Transform(), // Ignore nil/empty normalisation
-		protocmp.IgnoreFields(oldMsg /* à compléter si tu veux ignorer certains champs */),
+		oldMsg,
+		newMsg,
+		protocmp.Transform(),
+		protocmp.IgnoreFields(oldMsg),
 	)
 	if diff == "" {
 		return "No difference"
@@ -38,121 +49,227 @@ func DebugProtoDiff(oldMsg, newMsg proto.Message) string {
 	return fmt.Sprintf("Proto diff:\n%s", diff)
 }
 
-// ComputeDelta computes the difference between two HostInventory objects.
-// It returns a HostDeltaInventory containing the changes.
-// The delta includes added and removed packages, users, and other entities.
-// It uses the hashMessage function to compare the objects efficiently.
+func isNilProtoValue[T proto.Message](v T) bool {
+	if reflect.TypeOf(v) == nil {
+		return true
+	}
+
+	rv := reflect.ValueOf(v)
+	switch rv.Kind() {
+	case reflect.Pointer, reflect.Map, reflect.Slice, reflect.Interface, reflect.Func:
+		return rv.IsNil()
+	default:
+		return false
+	}
+}
+
+// sameProtoMessage compares two protobuf messages.
+func sameProtoMessage[T proto.Message](oldMsg, newMsg T) bool {
+	if isNilProtoValue(oldMsg) || isNilProtoValue(newMsg) {
+		return isNilProtoValue(oldMsg) && isNilProtoValue(newMsg)
+	}
+	return proto.Equal(oldMsg, newMsg)
+}
+
+// DiffGenericByHash compares repeated protobuf entries by identity and stable hash.
+// Same identity + different hash => modified item.
+func DiffGenericByHash[T proto.Message](
+	oldList, newList []T,
+	getKey func(T) string,
+) (added, removed, changed []T) {
+	oldByKey := make(map[string]T, len(oldList))
+	for _, item := range oldList {
+		if isNilProtoValue(item) {
+			continue
+		}
+		oldByKey[getKey(item)] = item
+	}
+
+	for _, item := range newList {
+		if isNilProtoValue(item) {
+			continue
+		}
+
+		key := getKey(item)
+		oldItem, exists := oldByKey[key]
+		if !exists {
+			added = append(added, item)
+			continue
+		}
+
+		if StableHash(oldItem) != StableHash(item) {
+			changed = append(changed, item)
+		}
+
+		delete(oldByKey, key)
+	}
+
+	for _, item := range oldByKey {
+		if isNilProtoValue(item) {
+			continue
+		}
+		removed = append(removed, item)
+	}
+
+	return added, removed, changed
+}
+
+// Identity helpers for each entity.
+func packageKey(item *schema.Package) string {
+	if item == nil {
+		return ""
+	}
+	return item.GetName() + ":" + item.GetVersion() + ":" + item.GetArchitecture()
+}
+
+func userKey(item *schema.User) string {
+	if item == nil {
+		return ""
+	}
+	return item.GetUsername()
+}
+
+func processKey(item *schema.Process) string {
+	if item == nil {
+		return ""
+	}
+	return fmt.Sprintf("%d", item.GetPid())
+}
+
+func systemdServiceKey(item *schema.SystemdService) string {
+	if item == nil {
+		return ""
+	}
+	return item.GetName()
+}
+
+func knownHostKey(item *schema.KnownHost) string {
+	if item == nil {
+		return ""
+	}
+	return item.GetHostname() + ":" + item.GetFingerprint()
+}
+
+func sshKeyInfoKey(item *schema.SshKeyInfo) string {
+	if item == nil {
+		return ""
+	}
+	return item.GetFingerprint()
+}
+
+func sshKeyAccessKey(item *schema.SshKeyAccess) string {
+	if item == nil {
+		return ""
+	}
+	return item.GetFingerprint() + ":" + item.GetAsUser()
+}
+
+func applicationKey(item *schema.Application) string {
+	if item == nil {
+		return ""
+	}
+	return fmt.Sprintf("%d", StableHash(item))
+}
+
+// ComputeDelta compares two HostInventory values and returns only the changed pieces.
 func ComputeDelta(oldInv, newInv *schema.HostInventory, logger *logrus.Logger) *schema.HostDeltaInventory {
+	if oldInv == nil {
+		oldInv = &schema.HostInventory{}
+	}
+	if newInv == nil {
+		newInv = &schema.HostInventory{}
+	}
+
 	delta := &schema.HostDeltaInventory{
-		Hostname:  newInv.Hostname,
+		Hostname:  newInv.GetHostname(),
 		UpdatedAt: time.Now().UTC().Format(time.RFC3339),
 	}
 
-	if oldInv.Platform == nil || !proto.Equal(oldInv.Platform, newInv.Platform) {
-		logger.Debugf("Platform changed: %s", DebugProtoDiff(oldInv.Platform, newInv.Platform))
-		delta.Platform = newInv.Platform
+	// Singular protobuf messages.
+	if !sameProtoMessage(oldInv.GetPlatform(), newInv.GetPlatform()) {
+		logger.Debugf("Platform changed: %s", DebugProtoDiff(oldInv.GetPlatform(), newInv.GetPlatform()))
+		delta.Platform = newInv.GetPlatform()
 	}
 
-	if oldInv.Network == nil || !proto.Equal(oldInv.Network, newInv.Network) {
-		logger.Debugf("Network changed: %s", DebugProtoDiff(oldInv.Network, newInv.Network))
-		delta.Network = newInv.Network
+	if !sameProtoMessage(oldInv.GetNetwork(), newInv.GetNetwork()) {
+		logger.Debugf("Network changed: %s", DebugProtoDiff(oldInv.GetNetwork(), newInv.GetNetwork()))
+		delta.Network = newInv.GetNetwork()
 	}
 
-	delta.ProcessesAdded, delta.ProcessesRemoved, _ = DiffGenericByHash(
-		oldInv.Processes,
-		newInv.Processes,
-		func(p *schema.Process) string { return fmt.Sprintf("%d", p.Pid) },
-	)
-
+	// Repeated entities.
 	delta.PackagesAdded, delta.PackagesRemoved, _ = DiffGenericByHash(
-		oldInv.Packages,
-		newInv.Packages,
-		func(p *schema.Package) string { return p.Name + p.Version },
+		oldInv.GetPackages(),
+		newInv.GetPackages(),
+		func(p *schema.Package) string { return packageKey(p) },
 	)
 
 	delta.UsersAdded, delta.UsersRemoved, _ = DiffGenericByHash(
-		oldInv.Users,
-		newInv.Users,
-		func(u *schema.User) string { return u.Username },
+		oldInv.GetUsers(),
+		newInv.GetUsers(),
+		func(u *schema.User) string { return userKey(u) },
 	)
+
+	delta.ProcessesAdded, delta.ProcessesRemoved, _ = DiffGenericByHash(
+		oldInv.GetProcesses(),
+		newInv.GetProcesses(),
+		func(p *schema.Process) string { return processKey(p) },
+	)
+
 	delta.SystemdservicesAdded, delta.SystemdservicesRemoved, _ = DiffGenericByHash(
-		oldInv.SystemdService,
-		newInv.SystemdService,
-		func(s *schema.SystemdService) string { return s.Name },
+		oldInv.GetSystemdService(),
+		newInv.GetSystemdService(),
+		func(s *schema.SystemdService) string { return systemdServiceKey(s) },
 	)
 
 	delta.KnownhostsAdded, delta.KnownhostsRemoved, _ = DiffGenericByHash(
-		oldInv.KnownHost,
-		newInv.KnownHost,
-		func(k *schema.KnownHost) string { return k.Hostname + k.Fingerprint },
-	)
-
-	delta.SshkeyaccessAdded, delta.SshkeyaccessRemoved, _ = DiffGenericByHash(
-		oldInv.SshKeyAccess,
-		newInv.SshKeyAccess,
-		func(s *schema.SshKeyAccess) string { return s.Fingerprint + s.AsUser },
+		oldInv.GetKnownHost(),
+		newInv.GetKnownHost(),
+		func(k *schema.KnownHost) string { return knownHostKey(k) },
 	)
 
 	delta.SshkeyinfoAdded, delta.SshkeyinfoRemoved, _ = DiffGenericByHash(
-		oldInv.SshKeyInfo,
-		newInv.SshKeyInfo,
-		func(s *schema.SshKeyInfo) string { return s.Fingerprint },
+		oldInv.GetSshKeyInfo(),
+		newInv.GetSshKeyInfo(),
+		func(k *schema.SshKeyInfo) string { return sshKeyInfoKey(k) },
+	)
+
+	delta.SshkeyaccessAdded, delta.SshkeyaccessRemoved, _ = DiffGenericByHash(
+		oldInv.GetSshKeyAccess(),
+		newInv.GetSshKeyAccess(),
+		func(k *schema.SshKeyAccess) string { return sshKeyAccessKey(k) },
+	)
+
+	delta.ApplicationsAdded, delta.ApplicationsRemoved, _ = DiffGenericByHash(
+		oldInv.GetApplication(),
+		newInv.GetApplication(),
+		func(a *schema.Application) string { return applicationKey(a) },
 	)
 
 	return delta
 }
 
-// DiffGenericByHash computes the difference between two lists of proto messages based on their hashes.
-func DiffGenericByHash[T proto.Message](
-	oldList, newList []T,
-	getKey func(T) string,
-) (added, removed, changed []T) {
-	oldHashes := make(map[string]uint64)
-	oldMap := make(map[string]T)
-
-	for _, o := range oldList {
-		k := getKey(o)
-		oldHashes[k] = hashMessage(o)
-		oldMap[k] = o
-	}
-
-	for _, n := range newList {
-		k := getKey(n)
-		newHash := hashMessage(n)
-
-		if oldHash, ok := oldHashes[k]; !ok {
-			added = append(added, n)
-		} else if oldHash != newHash {
-			changed = append(changed, n)
-		}
-		delete(oldMap, k)
-	}
-
-	for _, o := range oldMap {
-		removed = append(removed, o)
-	}
-
-	return
-}
-
-// IsDeltaEmpty checks if the delta inventory is empty
+// IsDeltaEmpty returns true when no meaningful change is present.
 func IsDeltaEmpty(d *schema.HostDeltaInventory) bool {
-	return len(d.PackagesAdded) == 0 &&
-		len(d.PackagesRemoved) == 0 &&
-		len(d.UsersAdded) == 0 &&
-		len(d.UsersRemoved) == 0 &&
-		len(d.SystemdservicesAdded) == 0 &&
-		len(d.SystemdservicesRemoved) == 0 &&
-		len(d.KnownhostsAdded) == 0 &&
-		len(d.KnownhostsRemoved) == 0 &&
-		len(d.SshkeyaccessAdded) == 0 &&
-		len(d.SshkeyaccessRemoved) == 0 &&
-		len(d.SshkeyinfoAdded) == 0 &&
-		len(d.SshkeyinfoRemoved) == 0 &&
-		len(d.SystemdservicesAdded) == 0 &&
-		len(d.SystemdservicesRemoved) == 0 &&
-		len(d.ProcessesAdded) == 0 &&
-		len(d.ProcessesRemoved) == 0 &&
-		d.Platform == nil &&
-		d.Network == nil
+	if d == nil {
+		return true
+	}
+
+	return len(d.GetPackagesAdded()) == 0 &&
+		len(d.GetPackagesRemoved()) == 0 &&
+		len(d.GetUsersAdded()) == 0 &&
+		len(d.GetUsersRemoved()) == 0 &&
+		len(d.GetApplicationsAdded()) == 0 &&
+		len(d.GetApplicationsRemoved()) == 0 &&
+		len(d.GetSystemdservicesAdded()) == 0 &&
+		len(d.GetSystemdservicesRemoved()) == 0 &&
+		len(d.GetKnownhostsAdded()) == 0 &&
+		len(d.GetKnownhostsRemoved()) == 0 &&
+		len(d.GetSshkeyaccessAdded()) == 0 &&
+		len(d.GetSshkeyaccessRemoved()) == 0 &&
+		len(d.GetSshkeyinfoAdded()) == 0 &&
+		len(d.GetSshkeyinfoRemoved()) == 0 &&
+		len(d.GetProcessesAdded()) == 0 &&
+		len(d.GetProcessesRemoved()) == 0 &&
+		d.GetPlatform() == nil &&
+		d.GetNetwork() == nil
 }

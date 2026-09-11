@@ -302,31 +302,77 @@ func (b *Builder) Build(ctx context.Context) (*schema.HostInventory, error) {
 	return inv, nil
 }
 
-func (b *Builder) ManageDelta(fullInventory *schema.HostInventory) (*schema.InventoryRequest, *schema.HostInventory) {
-	// Retrieve the old inventory from BoltDB
-	previous, err := b.Store.Get(fullInventory.Hostname)
-	var result *schema.InventoryRequest
-
-	// Check if previous inventory exists, compute delta and send it else send full inventory
-	if err != nil || previous == nil {
-		b.Log.Info("No previous inventory, computing full inventory")
-		result = &schema.InventoryRequest{
-			Content: &schema.InventoryRequest_Full{Full: fullInventory},
-		}
-		//b.Log.Debugf("Send this full inventory %s", fullInventory)
-		return result, fullInventory
-	} else {
-		b.Log.Info("Previous inventory found, computing delta")
-		delta := ComputeDelta(previous, fullInventory, b.Log)
-		if IsDeltaEmpty(delta) {
-			b.Log.Info("No changes detected, nothing to send")
-			return nil, nil
-		}
-		delta.UpdatedAt = time.Now().Format(time.RFC3339)
-		result = &schema.InventoryRequest{
-			Content: &schema.InventoryRequest_Delta{Delta: delta},
-		}
-		//b.Log.Debugf("Send this delta %s", result)
-		return result, fullInventory
+func (b *Builder) buildRevisionEnvelope(fullInventory *schema.HostInventory, delta *schema.HostDeltaInventory, previousRevision *schema.InventoryRevisionEnvelope) *schema.InventoryRevisionEnvelope {
+	now := b.Now().UTC()
+	sequence := uint64(1)
+	previousRevisionID := ""
+	previousSequence := uint64(0)
+	if previousRevision != nil {
+		previousRevisionID = previousRevision.RevisionId
+		previousSequence = previousRevision.Sequence
+		sequence = previousRevision.Sequence + 1
 	}
+
+	revisionID := fmt.Sprintf("%s-%d-%d", fullInventory.Hostname, now.UnixNano(), sequence)
+	stateHash := fmt.Sprintf("%x", StableHash(fullInventory))
+	sourceType := schema.SourceType_SOURCE_TYPE_FULL
+	if delta != nil {
+		sourceType = schema.SourceType_SOURCE_TYPE_DELTA
+	}
+
+	revision := &schema.InventoryRevisionEnvelope{
+		RevisionId:         revisionID,
+		Sequence:           sequence,
+		PreviousRevisionId: previousRevisionID,
+		PreviousSequence:   previousSequence,
+		CreatedAt:          now.Format(time.RFC3339Nano),
+		AgentId:            fullInventory.Hostname,
+		Hostname:           fullInventory.Hostname,
+		SourceType:         sourceType,
+		StateHash:          stateHash,
+	}
+	if fullInventory.Identifier != nil {
+		revision.MachineId = fullInventory.Identifier.MachineId
+	}
+	if fullInventory.Metadata != nil && fullInventory.Metadata.RunningDate != "" {
+		revision.CreatedAt = fullInventory.Metadata.RunningDate
+	}
+
+	switch sourceType {
+	case schema.SourceType_SOURCE_TYPE_FULL:
+		revision.Payload = &schema.InventoryRevisionEnvelope_Full{Full: fullInventory}
+	case schema.SourceType_SOURCE_TYPE_DELTA:
+		revision.Payload = &schema.InventoryRevisionEnvelope_Delta{Delta: delta}
+	}
+	return revision
+}
+
+func (b *Builder) ManageDelta(fullInventory *schema.HostInventory) (*schema.InventoryRequest, *schema.HostInventory) {
+	previous, err := b.Store.Get(fullInventory.Hostname)
+	previousRevision, prevRevErr := b.Store.GetRevision(fullInventory.Hostname)
+	if prevRevErr != nil {
+		b.Log.WithError(prevRevErr).Warn("Unable to load previous revision metadata")
+	}
+
+	if err != nil || previous == nil {
+		b.Log.Info("No previous inventory, creating full revision")
+		revision := b.buildRevisionEnvelope(fullInventory, nil, previousRevision)
+		if saveErr := b.Store.SaveRevision(fullInventory.Hostname, revision); saveErr != nil {
+			b.Log.WithError(saveErr).Error("Failed to persist revision metadata")
+		}
+		return &schema.InventoryRequest{Content: &schema.InventoryRequest_Revision{Revision: revision}}, fullInventory
+	}
+
+	b.Log.Info("Previous inventory found, computing delta")
+	delta := ComputeDelta(previous, fullInventory, b.Log)
+	if IsDeltaEmpty(delta) {
+		b.Log.Info("No changes detected, nothing to send")
+		return nil, nil
+	}
+	delta.UpdatedAt = time.Now().Format(time.RFC3339)
+	revision := b.buildRevisionEnvelope(fullInventory, delta, previousRevision)
+	if saveErr := b.Store.SaveRevision(fullInventory.Hostname, revision); saveErr != nil {
+		b.Log.WithError(saveErr).Error("Failed to persist revision metadata")
+	}
+	return &schema.InventoryRequest{Content: &schema.InventoryRequest_Revision{Revision: revision}}, fullInventory
 }

@@ -56,7 +56,7 @@ facter:
         enabled: true
         timeout: 10
         googleGeoUrl: "https://www.googleapis.com/geolocation/v1/geolocate"
-        googleGeoApikey: "AIzaSyB9i6aHGUa5Iv0tfDb9sy_HqXUebFmk8wI"
+        googleGeoApikey: ""
       ports:
         enabled: true
       publicIp:

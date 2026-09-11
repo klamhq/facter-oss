@@ -149,7 +149,7 @@ func TestSinkInventory_StoreDeleteOnError(t *testing.T) {
 	fullInventory := &schema.HostInventory{
 		Hostname: "test-delete-on-error",
 	}
-	
+
 	// First save something to the store
 	err = s.Save("test-delete-on-error", fullInventory)
 	assert.NoError(t, err)
@@ -160,6 +160,48 @@ func TestSinkInventory_StoreDeleteOnError(t *testing.T) {
 
 	// This should fail to export and delete the store entry
 	err = SinkInventory(cfg, logger, s, inventory, fullInventory)
+	assert.Error(t, err)
+}
+
+func TestSinkInventory_ClearsRevisionMetadataOnError(t *testing.T) {
+	tmpDir := t.TempDir()
+	storePath := filepath.Join(tmpDir, "test-store.db")
+
+	logger := logrus.New()
+	cfg := &options.RunOptions{}
+	cfg.Facter.Store.Path = storePath
+	cfg.Facter.Sink.Output.Type = "file"
+	cfg.Facter.Sink.Output.Format = "json"
+	cfg.Facter.Sink.Output.OutputDirectory = "/invalid/directory"
+	cfg.Facter.Sink.Output.OutputFilename = "output.json"
+
+	s, err := store.NewBoltInventoryStore(cfg.Facter.Store.Path)
+	assert.NoError(t, err)
+
+	fullInventory := &schema.HostInventory{
+		Hostname: "test-delete-revision-on-error",
+	}
+	inventory := &schema.InventoryRequest{
+		Content: &schema.InventoryRequest_Full{Full: fullInventory},
+	}
+	revision := &schema.InventoryRevisionEnvelope{
+		RevisionId: "test-delete-revision-on-error-1",
+		Sequence:   1,
+		Hostname:   "test-delete-revision-on-error",
+		SourceType: schema.SourceType_SOURCE_TYPE_FULL,
+		StateHash:  "hash-1",
+		Payload:    &schema.InventoryRevisionEnvelope_Full{Full: fullInventory},
+	}
+
+	err = s.Save("test-delete-revision-on-error", fullInventory)
+	assert.NoError(t, err)
+	err = s.SaveRevision("test-delete-revision-on-error", revision)
+	assert.NoError(t, err)
+
+	err = SinkInventory(cfg, logger, s, inventory, fullInventory)
+	assert.Error(t, err)
+
+	_, err = s.GetRevision("test-delete-revision-on-error")
 	assert.Error(t, err)
 }
 
@@ -182,7 +224,7 @@ func TestSinkInventory_DeltaInventory(t *testing.T) {
 	fullInventory := &schema.HostInventory{
 		Hostname: "test-delta",
 	}
-	
+
 	// Create delta inventory
 	deltaInventory := &schema.HostDeltaInventory{
 		Hostname: "test-delta",
